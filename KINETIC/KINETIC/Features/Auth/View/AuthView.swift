@@ -23,7 +23,7 @@ struct AuthView: View {
                     .foregroundStyle(Color(hex: 0xA73400))
 
                 Text("Ready to\ndrive?")
-                    .font(.inter(40, weight: .bold))
+                    .font(.inter(40, weight: .extraBold))
                     .foregroundStyle(Color(hex: 0x1A1C1E))
                     .padding(.top, 12)
 
@@ -82,13 +82,13 @@ struct AuthView: View {
                         .foregroundStyle(Color(hex: 0x5F5E5E))
 
                     HStack(spacing: 4) {
-                        Button("TERMS OF SERVICE") {}
+                        Text("TERMS OF SERVICE")
                             .font(.inter(10, weight: .medium))
                             .foregroundStyle(Color(hex: 0xA73400))
                         Text("AND")
                             .font(.inter(10, weight: .medium))
                             .foregroundStyle(Color(hex: 0x5F5E5E))
-                        Button("PRIVACY POLICY") {}
+                        Text("PRIVACY POLICY")
                             .font(.inter(10, weight: .medium))
                             .foregroundStyle(Color(hex: 0xA73400))
                         Text(".")
@@ -96,6 +96,8 @@ struct AuthView: View {
                             .foregroundStyle(Color(hex: 0x5F5E5E))
                     }
                 }
+                
+                Spacer()
             }
             .padding(24)
         }

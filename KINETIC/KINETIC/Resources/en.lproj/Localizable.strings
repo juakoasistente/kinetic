@@ -1,0 +1,77 @@
+/* App */
+"app.name" = "KINETIC";
+"app.tagline" = "ENGINEERED PRECISION";
+
+/* Auth */
+"auth.title" = "Ready to\ndrive?";
+"auth.subtitle" = "Join the Kinetic community.";
+"auth.continueApple" = "Continue with Apple";
+"auth.continueGoogle" = "Continue with Google";
+"auth.termsPrefix" = "BY CONTINUING, YOU AGREE TO OUR";
+"auth.termsOfService" = "TERMS OF SERVICE";
+"auth.and" = "AND";
+"auth.privacyPolicy" = "PRIVACY POLICY";
+
+/* Tabs */
+"tab.feed" = "Feed";
+"tab.record" = "Record";
+"tab.history" = "History";
+"tab.settings" = "Settings";
+
+/* History */
+"history.title" = "History";
+"history.subtitle" = "Review your past performance and precision routes.";
+"history.searchPlaceholder" = "Search routes, vehicles, or dates...";
+"history.empty.title" = "No Recordings Yet";
+"history.empty.subtitle" = "Record your first drive with telemetry to share it with the community.";
+"history.empty.button" = "Start Recording";
+
+/* Player */
+"player.title" = "Player";
+"player.sessionDetails" = "Session Details";
+"player.distance" = "DISTANCE";
+"player.elevation" = "ELEVATION";
+"player.maxAlt" = "MAX ALT.";
+"player.consumption" = "CONSUMPTION";
+"player.download" = "DOWNLOAD";
+"player.delete" = "DELETE";
+
+/* Record */
+"record.selectMode" = "SELECT MODE";
+"record.selectMode.subtitle" = "Choose how you want to track your performance session today.";
+"record.gpx.title" = "Import GPX Route";
+"record.gpx.subtitle" = "Load a pre-defined track or trail";
+"record.liveOverlay.title" = "RECORD WITH LIVE OVERLAY";
+"record.liveOverlay.subtitle" = "Video capture with real-time telemetry";
+"record.dataOnly.title" = "Start Data-Only Tracking";
+"record.dataOnly.subtitle" = "Minimal battery usage, pure GPS logs";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.editProfile" = "Edit Profile";
+"settings.language" = "Language";
+"settings.overlayCustomization" = "OVERLAY CUSTOMIZATION";
+"settings.generalSettings" = "GENERAL SETTINGS";
+"settings.speed" = "Speed";
+"settings.distance" = "Distance";
+"settings.time" = "Time";
+"settings.gpsStatus" = "GPS Status";
+"settings.units" = "Units";
+"settings.privacyPolicy" = "Privacy Policy";
+"settings.termsOfService" = "Terms of Service";
+"settings.logout" = "LOG OUT";
+
+/* Language */
+"language.subtitle" = "Select your preferred display language";
+"language.confirm" = "Confirm Selection";
+
+/* Profile */
+"profile.nickname" = "PROFILE NICKNAME";
+"profile.description" = "Description";
+"profile.info" = "Your nickname and profile picture will be public on the Feed and visible to other athletes in the community.";
+"profile.feedPreview" = "FEED PREVIEW";
+"profile.save" = "Save Profile Changes";
+"profile.updatePhoto" = "TAP TO UPDATE PHOTO";
+
+/* Share */
+"share.title" = "Share";

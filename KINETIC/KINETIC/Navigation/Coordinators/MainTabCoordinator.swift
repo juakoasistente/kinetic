@@ -1,7 +1,6 @@
 import SwiftUI
 
 enum MainTab: String, CaseIterable {
-    case feed
     case record
     case history
     case settings
@@ -9,14 +8,22 @@ enum MainTab: String, CaseIterable {
 
 @Observable
 final class MainTabCoordinator {
-    var selectedTab: MainTab = .history
+    var selectedTab: MainTab = .record
     var feedPath: [FeedRoute] = []
+    var recordPath: [RecordRoute] = []
     var historyPath: [HistoryRoute] = []
     var settingsPath: [SettingsRoute] = []
 }
 
 enum FeedRoute: Hashable {
     case detail(activityId: String)
+}
+
+enum RecordRoute: Hashable {
+    case trackingConfig
+    case countdown
+    case recording
+    case summary(sessionId: String)
 }
 
 enum HistoryRoute: Hashable {
@@ -27,4 +34,6 @@ enum HistoryRoute: Hashable {
 enum SettingsRoute: Hashable {
     case editProfile
     case language
+    case terms
+    case privacy
 }

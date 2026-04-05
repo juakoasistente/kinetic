@@ -19,4 +19,10 @@ final class HistoryViewModel {
         defer { isLoading = false }
         // TODO: Fetch from API
     }
+
+    static var preview: HistoryViewModel {
+        let vm = HistoryViewModel()
+        vm.sessions = Session.mockData
+        return vm
+    }
 }

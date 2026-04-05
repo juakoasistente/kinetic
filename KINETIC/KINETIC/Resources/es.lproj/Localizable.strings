@@ -1,0 +1,77 @@
+/* App */
+"app.name" = "KINETIC";
+"app.tagline" = "PRECISIÓN DISEÑADA";
+
+/* Auth */
+"auth.title" = "¿Listo para\nconducir?";
+"auth.subtitle" = "Únete a la comunidad Kinetic.";
+"auth.continueApple" = "Continuar con Apple";
+"auth.continueGoogle" = "Continuar con Google";
+"auth.termsPrefix" = "AL CONTINUAR, ACEPTAS NUESTROS";
+"auth.termsOfService" = "TÉRMINOS DE SERVICIO";
+"auth.and" = "Y";
+"auth.privacyPolicy" = "POLÍTICA DE PRIVACIDAD";
+
+/* Tabs */
+"tab.feed" = "Feed";
+"tab.record" = "Grabar";
+"tab.history" = "Historial";
+"tab.settings" = "Ajustes";
+
+/* History */
+"history.title" = "Historial";
+"history.subtitle" = "Revisa tus rutas y rendimiento anteriores.";
+"history.searchPlaceholder" = "Buscar rutas, vehículos o fechas...";
+"history.empty.title" = "Sin Grabaciones";
+"history.empty.subtitle" = "Graba tu primera conducción con telemetría para compartirla con la comunidad.";
+"history.empty.button" = "Empezar a Grabar";
+
+/* Player */
+"player.title" = "Reproductor";
+"player.sessionDetails" = "Detalles de Sesión";
+"player.distance" = "DISTANCIA";
+"player.elevation" = "ELEVACIÓN";
+"player.maxAlt" = "ALT. MÁX.";
+"player.consumption" = "CONSUMO";
+"player.download" = "DESCARGAR";
+"player.delete" = "ELIMINAR";
+
+/* Record */
+"record.selectMode" = "SELECCIONA MODO";
+"record.selectMode.subtitle" = "Elige cómo quieres registrar tu sesión de rendimiento hoy.";
+"record.gpx.title" = "Importar Ruta GPX";
+"record.gpx.subtitle" = "Cargar un track o sendero predefinido";
+"record.liveOverlay.title" = "GRABAR CON OVERLAY EN VIVO";
+"record.liveOverlay.subtitle" = "Captura de vídeo con telemetría en tiempo real";
+"record.dataOnly.title" = "Tracking Solo Datos";
+"record.dataOnly.subtitle" = "Uso mínimo de batería, solo logs GPS";
+
+/* Settings */
+"settings.title" = "Ajustes";
+"settings.editProfile" = "Editar Perfil";
+"settings.language" = "Idioma";
+"settings.overlayCustomization" = "PERSONALIZACIÓN DE OVERLAY";
+"settings.generalSettings" = "AJUSTES GENERALES";
+"settings.speed" = "Velocidad";
+"settings.distance" = "Distancia";
+"settings.time" = "Tiempo";
+"settings.gpsStatus" = "Estado GPS";
+"settings.units" = "Unidades";
+"settings.privacyPolicy" = "Política de Privacidad";
+"settings.termsOfService" = "Términos de Servicio";
+"settings.logout" = "CERRAR SESIÓN";
+
+/* Language */
+"language.subtitle" = "Selecciona tu idioma preferido";
+"language.confirm" = "Confirmar Selección";
+
+/* Profile */
+"profile.nickname" = "APODO DE PERFIL";
+"profile.description" = "Descripción";
+"profile.info" = "Tu apodo y foto de perfil serán públicos en el Feed y visibles para otros atletas de la comunidad.";
+"profile.feedPreview" = "VISTA PREVIA DEL FEED";
+"profile.save" = "Guardar Cambios del Perfil";
+"profile.updatePhoto" = "TOCA PARA ACTUALIZAR FOTO";
+
+/* Share */
+"share.title" = "Compartir";

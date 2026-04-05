@@ -10,6 +10,7 @@ import CoreText
 
 @main
 struct KINETICApp: App {
+    @State private var languageManager = LanguageManager.shared
 
     init() {
         Self.registerFonts()
@@ -18,6 +19,7 @@ struct KINETICApp: App {
     var body: some Scene {
         WindowGroup {
             AppRootView()
+                .environment(languageManager)
         }
     }
 
