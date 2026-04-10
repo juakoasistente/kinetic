@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @State private var viewModel = SettingsViewModel()
+    @State private var overlaySettings = OverlaySettings.shared
     @State private var showLogoutAlert = false
     @State private var showLanguageSheet = false
     @State private var showLegal: LegalType?
@@ -11,7 +12,7 @@ struct SettingsView: View {
     @Environment(MainTabCoordinator.self) private var tabCoordinator
 
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 0) {
                 // Profile card
                 profileCard
@@ -20,26 +21,28 @@ struct SettingsView: View {
                     .padding(.horizontal, 20)
 
                 // Overlay Customization
-                sectionHeader(icon: "overlay", title: "OVERLAY CUSTOMIZATION")
+                sectionHeader(icon: "overlay", title: LanguageManager.shared.localizedString("settings.overlayCustomization"))
 
                 VStack(spacing: 0) {
-                    toggleRow(icon: "speed", title: "Speed", isOn: $viewModel.showSpeed)
-                    toggleRow(icon: "speed", title: "Distance", isOn: $viewModel.showDistance)
-                    toggleRow(icon: "time", title: "Time", isOn: $viewModel.showTime)
-                    toggleRow(icon: "gps", title: "GPS Status", isOn: $viewModel.showGPS)
+                    toggleRow(icon: "speed", title: LanguageManager.shared.localizedString("settings.overlay.speed"), isOn: $overlaySettings.showSpeed)
+                    toggleRow(icon: "speed", title: LanguageManager.shared.localizedString("settings.overlay.maxSpeed"), isOn: $overlaySettings.showMaxSpeed)
+                    toggleRow(icon: "speed", title: LanguageManager.shared.localizedString("settings.overlay.avgSpeed"), isOn: $overlaySettings.showAvgSpeed)
+                    toggleRow(icon: "speed", title: LanguageManager.shared.localizedString("settings.overlay.distance"), isOn: $overlaySettings.showDistance)
+                    toggleRow(icon: "time", title: LanguageManager.shared.localizedString("settings.overlay.time"), isOn: $overlaySettings.showTime)
+                    toggleRow(icon: "gps", title: LanguageManager.shared.localizedString("settings.overlay.miniMap"), isOn: $overlaySettings.showMiniMap)
                     unitsRow
                 }
                 .padding(.horizontal, 20)
 
                 // General Settings
-                sectionHeader(icon: "settingsSelected", title: "GENERAL SETTINGS")
+                sectionHeader(icon: "settingsSelected", title: LanguageManager.shared.localizedString("settings.generalSettings"))
 
                 VStack(spacing: 0) {
-                    navigationRow(icon: "language", title: "Language", detail: currentLanguage.title)
+                    navigationRow(icon: "language", title: LanguageManager.shared.localizedString("settings.language"), detail: currentLanguage.title)
                         .onTapGesture { showLanguageSheet = true }
-                    navigationRow(icon: "privacy", title: "Privacy Policy")
+                    navigationRow(icon: "privacy", title: LanguageManager.shared.localizedString("settings.privacyPolicy"))
                         .onTapGesture { showLegal = .privacy }
-                    navigationRow(icon: "terms 1", title: "Terms of Service")
+                    navigationRow(icon: "terms 1", title: LanguageManager.shared.localizedString("settings.termsOfService"))
                         .onTapGesture { showLegal = .terms }
                 }
                 .padding(.horizontal, 20)
@@ -48,7 +51,7 @@ struct SettingsView: View {
                 Button { showLogoutAlert = true } label: {
                     HStack(spacing: 8) {
                         Image("logout")
-                        Text("LOG OUT")
+                        Text(localized: "settings.logout")
                             .font(.inter(14, weight: .bold))
                             .tracking(1)
                     }
@@ -65,7 +68,7 @@ struct SettingsView: View {
                 .padding(.top, 24)
 
                 // Version
-                Text("KINETIC V1.1.0")
+                Text("KINETIC V\(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")")
                     .font(.inter(9, weight: .medium))
                     .tracking(1.5)
                     .foregroundStyle(Color.gravel.opacity(0.5))
@@ -74,6 +77,14 @@ struct SettingsView: View {
             }
         }
         .background(.fog)
+        .overlay {
+            if viewModel.isLoading {
+                ZStack {
+                    Color.fog.ignoresSafeArea()
+                    SpinningView()
+                }
+            }
+        }
         .toolbarBackground(.white, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .navigationBarTitleDisplayMode(.inline)
@@ -108,13 +119,22 @@ struct SettingsView: View {
                 currentLanguage = language
             }
         }
-        .alert("Log Out", isPresented: $showLogoutAlert) {
-            Button("Cancel", role: .cancel) {}
-            Button("Log Out", role: .destructive) {
+        .alert(LanguageManager.shared.localizedString("settings.logoutTitle"), isPresented: $showLogoutAlert) {
+            Button(LanguageManager.shared.localizedString("settings.cancel"), role: .cancel) {}
+            Button(LanguageManager.shared.localizedString("settings.logoutTitle"), role: .destructive) {
+                Task { try? await SupabaseManager.shared.signOut() }
                 appCoordinator.showAuth()
             }
         } message: {
-            Text("Are you sure you want to log out?")
+            Text(localized: "settings.logoutMessage")
+        }
+        .alert("Error", isPresented: Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
     }
 
@@ -138,14 +158,9 @@ struct SettingsView: View {
                     .frame(width: 22, height: 22)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(viewModel.userName)
-                    .font(.inter(18, weight: .bold))
-                    .foregroundStyle(.coal)
-                Text(viewModel.userTier)
-                    .font(.inter(13, weight: .regular))
-                    .foregroundStyle(.gravel)
-            }
+            Text(viewModel.userName.isEmpty ? "KINETIC User" : viewModel.userName)
+                .font(.inter(18, weight: .bold))
+                .foregroundStyle(.coal)
 
             Spacer()
         }

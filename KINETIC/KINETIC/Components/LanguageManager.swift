@@ -8,8 +8,8 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .spanish: "Castellano"
-        case .english: "Inglés"
+        case .spanish: LanguageManager.shared.current == .spanish ? "Castellano" : "Spanish"
+        case .english: LanguageManager.shared.current == .spanish ? "Inglés" : "English"
         }
     }
 
@@ -27,10 +27,12 @@ final class LanguageManager {
             UserDefaults.standard.set(current.rawValue, forKey: "app_language")
             UserDefaults.standard.set([current.rawValue], forKey: "AppleLanguages")
             bundle = Self.loadBundle(for: current)
+            refreshId = UUID()
         }
     }
 
     private(set) var bundle: Bundle
+    var refreshId = UUID()
 
     private init() {
         let saved = UserDefaults.standard.string(forKey: "app_language") ?? "en"

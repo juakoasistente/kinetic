@@ -1,14 +1,15 @@
 import SwiftUI
 import Combine
+import CoreLocation
 
 struct LiveTrackingView: View {
-    @State private var speed: Int = 124
-    @State private var maxSpeed: Int = 184
-    @State private var avgSpeed: Int = 84
-    @State private var distance: Double = 14.2
-    @State private var elapsed: TimeInterval = 765 // 00:12:45
+    var endCoordinate: CLLocationCoordinate2D? = nil
+    var onCloseAll: (() -> Void)?
+    @State private var locationManager = LocationManager()
+    @State private var elapsed: TimeInterval = 0
     @State private var isPaused = false
     @State private var showSummary = false
+    @State private var trackingSummary: TrackingSummary?
     @Environment(\.dismiss) private var dismiss
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -48,7 +49,7 @@ struct LiveTrackingView: View {
                         .blur(radius: 20)
 
                     HStack(alignment: .firstTextBaseline, spacing: 0) {
-                        Text("\(speed)")
+                        Text("\(Int(locationManager.currentSpeed))")
                             .font(.inter(100, weight: .black))
                             .italic()
                             .foregroundStyle(.white)
@@ -69,10 +70,10 @@ struct LiveTrackingView: View {
                 GridItem(.flexible(), spacing: 1),
                 GridItem(.flexible(), spacing: 1)
             ], spacing: 1) {
-                statCard(label: "VELOCIDAD MÁX", value: "\(maxSpeed)", unit: "KM/H")
-                statCard(label: "VELOCIDAD MEDIA", value: "\(avgSpeed)", unit: "KM/H")
-                statCard(label: "DISTANCIA", value: String(format: "%.1f", distance), unit: "KM")
-                statCard(label: "TIEMPO", value: formattedTime, unit: "")
+                statCard(label: LanguageManager.shared.localizedString("live.maxSpeed"), value: "\(Int(locationManager.maxSpeed))", unit: "KM/H")
+                statCard(label: LanguageManager.shared.localizedString("live.avgSpeed"), value: "\(Int(locationManager.avgSpeed))", unit: "KM/H")
+                statCard(label: LanguageManager.shared.localizedString("live.distance"), value: String(format: "%.1f", locationManager.totalDistance), unit: "KM")
+                statCard(label: LanguageManager.shared.localizedString("live.time"), value: formattedTime, unit: "")
             }
             .background(Color.white.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 12))
@@ -88,10 +89,15 @@ struct LiveTrackingView: View {
                     withTransaction(transaction) {
                         isPaused.toggle()
                     }
+                    if isPaused {
+                        locationManager.pauseTracking()
+                    } else {
+                        locationManager.resumeTracking()
+                    }
                     HapticManager.impact(.medium)
                 } label: {
                     HStack(spacing: 10) {
-                        Text(isPaused ? "RESUME TRACKING" : "PAUSE TRACKING")
+                        Text(isPaused ? LanguageManager.shared.localizedString("tracking.resume") : LanguageManager.shared.localizedString("tracking.pause"))
                             .font(.inter(15, weight: .black))
                             .tracking(1)
                         Image(systemName: isPaused ? "play.fill" : "pause.fill")
@@ -110,10 +116,11 @@ struct LiveTrackingView: View {
 
                 Button {
                     HapticManager.notification(.warning)
+                    trackingSummary = locationManager.stopTracking()
                     showSummary = true
                 } label: {
                     HStack(spacing: 10) {
-                        Text("STOP TRACKING")
+                        Text(localized: "tracking.stop")
                             .font(.inter(15, weight: .black))
                             .tracking(1)
                         Image("stop")
@@ -131,7 +138,35 @@ struct LiveTrackingView: View {
         }
         .background(.black)
         .fullScreenCover(isPresented: $showSummary) {
-            TripSummaryView()
+            if let summary = trackingSummary {
+                TripSummaryView(
+                    maxSpeed: "\(Int(summary.maxSpeed))",
+                    avgSpeed: "\(Int(summary.avgSpeed))",
+                    distance: String(format: "%.1f", summary.totalDistance),
+                    time: formatTime(summary.elapsedTime),
+                    durationSeconds: summary.elapsedTime,
+                    distanceKm: summary.totalDistance,
+                    maxSpeedValue: summary.maxSpeed,
+                    avgSpeedValue: summary.avgSpeed,
+                    routeCoordinates: summary.routeCoordinates,
+                    telemetrySnapshots: summary.snapshots,
+                    onClose: onCloseAll
+                )
+            } else {
+                Color.black.ignoresSafeArea()
+            }
+        }
+        .onAppear {
+            locationManager.requestPermission()
+            locationManager.startTracking()
+            if let end = endCoordinate {
+                locationManager.endWaypoint = end
+                locationManager.onReachedEnd = {
+                    HapticManager.notification(.warning)
+                    trackingSummary = locationManager.stopTracking()
+                    showSummary = true
+                }
+            }
         }
         .onReceive(timer) { _ in
             guard !isPaused else { return }
@@ -142,9 +177,13 @@ struct LiveTrackingView: View {
     // MARK: - Helpers
 
     private var formattedTime: String {
-        let h = Int(elapsed) / 3600
-        let m = (Int(elapsed) % 3600) / 60
-        let s = Int(elapsed) % 60
+        formatTime(elapsed)
+    }
+
+    private func formatTime(_ interval: TimeInterval) -> String {
+        let h = Int(interval) / 3600
+        let m = (Int(interval) % 3600) / 60
+        let s = Int(interval) % 60
         return String(format: "%02d:%02d:%02d", h, m, s)
     }
 

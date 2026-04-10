@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ShareActivityView: View {
-    let sessionId: String
+    let sessionId: UUID
 
     var body: some View {
         Text("Share Activity")
@@ -11,6 +11,6 @@ struct ShareActivityView: View {
 
 #Preview {
     NavigationStack {
-        ShareActivityView(sessionId: "preview-1")
+        ShareActivityView(sessionId: UUID())
     }
 }

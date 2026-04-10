@@ -2,13 +2,16 @@ import SwiftUI
 import PhotosUI
 
 struct EditProfileView: View {
-    @State private var nickname = "Alex Runner"
-    @State private var bio = "Just finished a 10k personal beste"
+    @State private var nickname = ""
+    @State private var bio = ""
     @State private var profileImage: UIImage?
     @State private var showPhotoOptions = false
     @State private var showCamera = false
     @State private var showGallery = false
     @State private var galleryItem: PhotosPickerItem?
+    @State private var isSaving = false
+    @State private var imageDidChange = false
+    @State private var errorMessage: String?
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -171,16 +174,24 @@ struct EditProfileView: View {
 
                     // Save button
                     Button {
-                        dismiss()
+                        Task { await saveProfile() }
                     } label: {
-                        Text("Save Profile Changes")
-                            .font(.inter(16, weight: .bold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(.rust)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        Group {
+                            if isSaving {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Text("Save Profile Changes")
+                                    .font(.inter(16, weight: .bold))
+                            }
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(.rust)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+                    .disabled(isSaving)
                     .padding(.horizontal, 20)
                     .padding(.top, 32)
                     .padding(.bottom, 32)
@@ -191,6 +202,15 @@ struct EditProfileView: View {
         .background(.fog)
         .navigationBarHidden(true)
         .swipeBack { dismiss() }
+        .task { await loadProfile() }
+        .alert("Error", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
         .confirmationDialog("Update Profile Photo", isPresented: $showPhotoOptions) {
             Button("Take Photo") { showCamera = true }
             Button("Choose from Gallery") { showGallery = true }
@@ -199,6 +219,7 @@ struct EditProfileView: View {
         .fullScreenCover(isPresented: $showCamera) {
             CameraView { image in
                 profileImage = image
+                imageDidChange = true
             }
             .ignoresSafeArea()
         }
@@ -209,8 +230,54 @@ struct EditProfileView: View {
                 if let data = try? await newItem.loadTransferable(type: Data.self),
                    let image = UIImage(data: data) {
                     profileImage = image
+                    imageDidChange = true
                 }
             }
+        }
+    }
+
+    // MARK: - Supabase
+
+    private func loadProfile() async {
+        guard let userId = SupabaseManager.shared.currentUserId else { return }
+        do {
+            let profile = try await ProfileService.shared.fetchProfile(userId: userId)
+            nickname = profile.nickname
+            bio = profile.bio
+            if let avatarUrl = profile.avatarUrl, let url = URL(string: avatarUrl) {
+                let (data, _) = try await URLSession.shared.data(from: url)
+                profileImage = UIImage(data: data)
+            }
+        } catch {
+            print("[EditProfile] Failed to load profile: \(error.localizedDescription)")
+        }
+    }
+
+    private func saveProfile() async {
+        guard let userId = SupabaseManager.shared.currentUserId else {
+            dismiss()
+            return
+        }
+
+        isSaving = true
+        defer { isSaving = false }
+
+        do {
+            var avatarUrl: String?
+
+            if imageDidChange, let image = profileImage,
+               let data = image.jpegData(compressionQuality: 0.8) {
+                avatarUrl = try await ProfileService.shared.uploadAvatar(userId: userId, imageData: data)
+            }
+
+            var profile = Profile(id: userId, nickname: nickname, bio: bio)
+            if let avatarUrl { profile.avatarUrl = avatarUrl }
+
+            try await ProfileService.shared.updateProfile(profile)
+            HapticManager.notification(.success)
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }

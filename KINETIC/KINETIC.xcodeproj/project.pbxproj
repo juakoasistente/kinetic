@@ -6,11 +6,36 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D2B4BC452F82B22100E605CA /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = D2B4BC442F82B22100E605CA /* Auth */; };
+		D2B4BC472F82B22100E605CA /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = D2B4BC462F82B22100E605CA /* Functions */; };
+		D2B4BC492F82B22100E605CA /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = D2B4BC482F82B22100E605CA /* PostgREST */; };
+		D2B4BC4B2F82B22100E605CA /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = D2B4BC4A2F82B22100E605CA /* Realtime */; };
+		D2B4BC4D2F82B22100E605CA /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = D2B4BC4C2F82B22100E605CA /* Storage */; };
+		D2B4BC622F82B74700E605CA /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = D2B4BC612F82B74700E605CA /* Supabase */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AA000001300000000000000A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D2B4BA752F7ECF1100E605CA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2B4BA7C2F7ECF1100E605CA;
+			remoteInfo = KINETIC;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		AA000002300000000000000A /* KINETICTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KINETICTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2B4BA7D2F7ECF1100E605CA /* KINETIC.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KINETIC.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		AA000003300000000000000A /* KINETICTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = KINETICTests;
+			sourceTree = "<group>";
+		};
 		D2B4BA7F2F7ECF1100E605CA /* KINETIC */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = KINETIC;
@@ -19,10 +44,23 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		AA000004300000000000000A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D2B4BA7A2F7ECF1100E605CA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2B4BC492F82B22100E605CA /* PostgREST in Frameworks */,
+				D2B4BC472F82B22100E605CA /* Functions in Frameworks */,
+				D2B4BC622F82B74700E605CA /* Supabase in Frameworks */,
+				D2B4BC452F82B22100E605CA /* Auth in Frameworks */,
+				D2B4BC4D2F82B22100E605CA /* Storage in Frameworks */,
+				D2B4BC4B2F82B22100E605CA /* Realtime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -33,6 +71,8 @@
 			isa = PBXGroup;
 			children = (
 				D2B4BA7F2F7ECF1100E605CA /* KINETIC */,
+				AA000003300000000000000A /* KINETICTests */,
+				D2B4BC602F82B74700E605CA /* Frameworks */,
 				D2B4BA7E2F7ECF1100E605CA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,13 +81,42 @@
 			isa = PBXGroup;
 			children = (
 				D2B4BA7D2F7ECF1100E605CA /* KINETIC.app */,
+				AA000002300000000000000A /* KINETICTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D2B4BC602F82B74700E605CA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		AA000005300000000000000A /* KINETICTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA000006300000000000000A /* Build configuration list for PBXNativeTarget "KINETICTests" */;
+			buildPhases = (
+				AA000007300000000000000A /* Sources */,
+				AA000004300000000000000A /* Frameworks */,
+				AA000008300000000000000A /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA000009300000000000000A /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AA000003300000000000000A /* KINETICTests */,
+			);
+			name = KINETICTests;
+			productName = KINETICTests;
+			productReference = AA000002300000000000000A /* KINETICTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		D2B4BA7C2F7ECF1100E605CA /* KINETIC */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D2B4BA882F7ECF1200E605CA /* Build configuration list for PBXNativeTarget "KINETIC" */;
@@ -65,6 +134,12 @@
 			);
 			name = KINETIC;
 			packageProductDependencies = (
+				D2B4BC442F82B22100E605CA /* Auth */,
+				D2B4BC462F82B22100E605CA /* Functions */,
+				D2B4BC482F82B22100E605CA /* PostgREST */,
+				D2B4BC4A2F82B22100E605CA /* Realtime */,
+				D2B4BC4C2F82B22100E605CA /* Storage */,
+				D2B4BC612F82B74700E605CA /* Supabase */,
 			);
 			productName = KINETIC;
 			productReference = D2B4BA7D2F7ECF1100E605CA /* KINETIC.app */;
@@ -80,6 +155,10 @@
 				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
+					AA000005300000000000000A = {
+						CreatedOnToolsVersion = 26.0.1;
+						TestTargetID = D2B4BA7C2F7ECF1100E605CA;
+					};
 					D2B4BA7C2F7ECF1100E605CA = {
 						CreatedOnToolsVersion = 26.0.1;
 					};
@@ -95,17 +174,28 @@
 			);
 			mainGroup = D2B4BA742F7ECF1100E605CA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D2B4BC432F82B22100E605CA /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D2B4BA7E2F7ECF1100E605CA /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				D2B4BA7C2F7ECF1100E605CA /* KINETIC */,
+				AA000005300000000000000A /* KINETICTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		AA000008300000000000000A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D2B4BA7B2F7ECF1100E605CA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -116,6 +206,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		AA000007300000000000000A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D2B4BA792F7ECF1100E605CA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -125,7 +222,65 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		AA000009300000000000000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2B4BA7C2F7ECF1100E605CA /* KINETIC */;
+			targetProxy = AA000001300000000000000A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		AA00000A300000000000000A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_ENTITLEMENTS = KINETIC/KINETIC.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TTYSW5WRS2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = kinetic.KINETICTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KINETIC.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KINETIC";
+			};
+			name = Debug;
+		};
+		AA00000B300000000000000A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_ENTITLEMENTS = KINETIC/KINETIC.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TTYSW5WRS2;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = kinetic.KINETICTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/KINETIC.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/KINETIC";
+			};
+			name = Release;
+		};
 		D2B4BA862F7ECF1200E605CA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -252,30 +407,41 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = KINETIC/KINETIC.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = R7YB77GB5J;
+				DEVELOPMENT_TEAM = TTYSW5WRS2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "KINETIC needs camera access to take your profile photo and record driving videos.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "KINETIC needs your location in the background to keep recording driving telemetry when the app is minimized.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "KINETIC needs your location to record driving telemetry.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "KINETIC needs photo library access to select your profile photo.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = kinetic.KINETIC;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kronoset.kinetic.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -284,36 +450,56 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = KINETIC/KINETIC.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = R7YB77GB5J;
+				DEVELOPMENT_TEAM = TTYSW5WRS2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "KINETIC needs camera access to take your profile photo and record driving videos.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "KINETIC needs your location in the background to keep recording driving telemetry when the app is minimized.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "KINETIC needs your location to record driving telemetry.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "KINETIC needs photo library access to select your profile photo.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = kinetic.KINETIC;
+				PRODUCT_BUNDLE_IDENTIFIER = com.kronoset.kinetic.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		AA000006300000000000000A /* Build configuration list for PBXNativeTarget "KINETICTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA00000A300000000000000A /* Debug */,
+				AA00000B300000000000000A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		D2B4BA782F7ECF1100E605CA /* Build configuration list for PBXProject "KINETIC" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -333,6 +519,50 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D2B4BC432F82B22100E605CA /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D2B4BC442F82B22100E605CA /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D2B4BC432F82B22100E605CA /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		D2B4BC462F82B22100E605CA /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D2B4BC432F82B22100E605CA /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		D2B4BC482F82B22100E605CA /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D2B4BC432F82B22100E605CA /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		D2B4BC4A2F82B22100E605CA /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D2B4BC432F82B22100E605CA /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		D2B4BC4C2F82B22100E605CA /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D2B4BC432F82B22100E605CA /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		D2B4BC612F82B74700E605CA /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D2B4BC432F82B22100E605CA /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D2B4BA752F7ECF1100E605CA /* Project object */;
 }

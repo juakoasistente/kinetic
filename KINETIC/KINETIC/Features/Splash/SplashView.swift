@@ -8,8 +8,14 @@ struct SplashView: View {
             .resizable()
             .scaledToFill()
             .ignoresSafeArea()
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            .task {
+                let hasSession = await SupabaseManager.shared.restoreSession()
+                try? await Task.sleep(for: .seconds(1.5))
+                if hasSession {
+                    coordinator.showMain()
+                } else if !coordinator.hasCompletedOnboarding {
+                    coordinator.showOnboarding()
+                } else {
                     coordinator.showAuth()
                 }
             }

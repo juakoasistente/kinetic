@@ -1,0 +1,212 @@
+import SwiftUI
+
+struct PostCardView: View {
+    let post: Post
+    var onLike: () -> Void = {}
+    var onComment: () -> Void = {}
+    var onShare: () -> Void = {}
+    var onBookmark: () -> Void = {}
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // MARK: - Author Header
+            authorHeader
+
+            // MARK: - Session Stats
+            if let session = post.session {
+                sessionStatsCard(session)
+            }
+
+            // MARK: - Media
+            if let media = post.media, let firstMedia = media.first {
+                mediaSection(firstMedia)
+            }
+
+            // MARK: - Description
+            if !post.description.isEmpty {
+                Text(post.description)
+                    .font(.inter(14, weight: .regular))
+                    .foregroundStyle(Color.coal)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+            }
+
+            // MARK: - Interaction Bar
+            interactionBar
+                .padding(.top, 12)
+
+            Divider()
+                .padding(.top, 12)
+        }
+        .background(Color.white)
+    }
+
+    // MARK: - Author Header
+
+    private var authorHeader: some View {
+        HStack(spacing: 12) {
+            // Avatar
+            if let avatarUrl = post.authorAvatarUrl, let url = URL(string: avatarUrl) {
+                AsyncImage(url: url) { image in
+                    image.resizable().scaledToFill()
+                } placeholder: {
+                    avatarPlaceholder
+                }
+                .frame(width: 40, height: 40)
+                .clipShape(Circle())
+            } else {
+                avatarPlaceholder
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(post.authorName)
+                    .font(.inter(14, weight: .semibold))
+                    .foregroundStyle(Color.coal)
+                Text(post.formattedDate)
+                    .font(.inter(12, weight: .regular))
+                    .foregroundStyle(Color.gravel)
+            }
+
+            Spacer()
+
+            Button(action: {}) {
+                Image(systemName: "ellipsis")
+                    .foregroundStyle(Color.gravel)
+                    .frame(width: 32, height: 32)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    private var avatarPlaceholder: some View {
+        Circle()
+            .fill(Color.mist)
+            .frame(width: 40, height: 40)
+            .overlay {
+                Text(String(post.authorName.prefix(1)).uppercased())
+                    .font(.inter(16, weight: .bold))
+                    .foregroundStyle(Color.gravel)
+            }
+    }
+
+    // MARK: - Session Stats
+
+    private func sessionStatsCard(_ session: Session) -> some View {
+        HStack(spacing: 0) {
+            statItem(
+                value: String(format: "%.0f", session.distance > 0 ? session.distance : 142),
+                unit: "KM/H",
+                label: LanguageManager.shared.localizedString("feed.maxSpeed")
+            )
+            Spacer()
+            statItem(
+                value: String(format: "%.1f", session.distance),
+                unit: "KM",
+                label: LanguageManager.shared.localizedString("feed.distance")
+            )
+            Spacer()
+            statItem(
+                value: session.formattedDuration,
+                unit: "MIN",
+                label: LanguageManager.shared.localizedString("feed.duration")
+            )
+        }
+        .padding(16)
+        .background(Color.coal)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 16)
+    }
+
+    private func statItem(value: String, unit: String, label: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(value)
+                    .font(.inter(24, weight: .bold))
+                    .foregroundStyle(Color.white)
+                Text(unit)
+                    .font(.inter(10, weight: .medium))
+                    .foregroundStyle(Color.gravel)
+            }
+            Text(label)
+                .font(.inter(10, weight: .medium))
+                .foregroundStyle(Color.gravel)
+                .textCase(.uppercase)
+        }
+    }
+
+    // MARK: - Media
+
+    private func mediaSection(_ media: PostMedia) -> some View {
+        AsyncImage(url: URL(string: media.mediaUrl)) { image in
+            image
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity)
+                .frame(height: 220)
+                .clipped()
+        } placeholder: {
+            Rectangle()
+                .fill(Color.mist)
+                .frame(height: 220)
+                .overlay {
+                    Image(systemName: "photo")
+                        .font(.system(size: 32))
+                        .foregroundStyle(Color.silver)
+                }
+        }
+        .padding(.top, 8)
+    }
+
+    // MARK: - Interaction Bar
+
+    private var interactionBar: some View {
+        HStack(spacing: 24) {
+            // Like
+            Button(action: onLike) {
+                HStack(spacing: 6) {
+                    Image(systemName: (post.isLikedByMe ?? false) ? "heart.fill" : "heart")
+                        .foregroundStyle((post.isLikedByMe ?? false) ? Color.stravaOrange : Color.gravel)
+                    if let count = post.likesCount, count > 0 {
+                        Text("\(count)")
+                            .font(.inter(13, weight: .medium))
+                            .foregroundStyle(Color.gravel)
+                    }
+                }
+            }
+
+            // Comment
+            Button(action: onComment) {
+                HStack(spacing: 6) {
+                    Image(systemName: "bubble.left")
+                        .foregroundStyle(Color.gravel)
+                    if let count = post.commentsCount, count > 0 {
+                        Text("\(count)")
+                            .font(.inter(13, weight: .medium))
+                            .foregroundStyle(Color.gravel)
+                    }
+                }
+            }
+
+            // Share
+            Button(action: onShare) {
+                Image(systemName: "square.and.arrow.up")
+                    .foregroundStyle(Color.gravel)
+            }
+
+            Spacer()
+
+            // Bookmark
+            Button(action: onBookmark) {
+                Image(systemName: (post.isBookmarkedByMe ?? false) ? "bookmark.fill" : "bookmark")
+                    .foregroundStyle((post.isBookmarkedByMe ?? false) ? Color.stravaOrange : Color.gravel)
+            }
+        }
+        .font(.system(size: 20))
+        .padding(.horizontal, 16)
+    }
+}
+
+#Preview {
+    PostCardView(post: Post.mockData[0])
+}

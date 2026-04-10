@@ -8,15 +8,15 @@ enum TrackingMode: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .freeRecord: "REGISTRO LIBRE"
-        case .scheduled: "TRAMO PROGRAMADO"
+        case .freeRecord: LanguageManager.shared.localizedString("tracking.freeRecord")
+        case .scheduled: LanguageManager.shared.localizedString("tracking.scheduled")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .freeRecord: "Pulsa play para empezar y stop para terminar manualmente."
-        case .scheduled: "Define un punto de inicio y fin (A → B) para el autostart."
+        case .freeRecord: LanguageManager.shared.localizedString("tracking.freeRecord.subtitle")
+        case .scheduled: LanguageManager.shared.localizedString("tracking.scheduled.subtitle")
         }
     }
 
@@ -47,7 +47,7 @@ struct TrackingConfigView: View {
 
                 Spacer()
 
-                Text("CONFIGURAR TRACKING")
+                Text(localized: "tracking.configTitle")
                     .font(.inter(14, weight: .black))
                     .tracking(1)
                     .foregroundStyle(.white)
@@ -76,10 +76,12 @@ struct TrackingConfigView: View {
             Button {
                 if selected == .freeRecord {
                     path.append(.countdown)
+                } else if selected == .scheduled {
+                    path.append(.routeSetup)
                 }
             } label: {
                 HStack(spacing: 8) {
-                    Text("CONFIRMAR Y EMPEZAR")
+                    Text(localized: "tracking.confirm")
                         .font(.inter(15, weight: .black))
                         .tracking(1)
                     Image("start")

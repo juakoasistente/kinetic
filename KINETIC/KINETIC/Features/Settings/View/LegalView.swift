@@ -1,5 +1,6 @@
 import SwiftUI
 import WebKit
+import Supabase
 
 enum LegalType: Identifiable {
     case terms
@@ -12,35 +13,33 @@ enum LegalType: Identifiable {
         }
     }
 
-    var badge: String { "LEGAL" }
+    var badge: String { LanguageManager.shared.localizedString("legal.badge") }
 
     var title: String {
         switch self {
-        case .terms: "Términos y"
-        case .privacy: "Política de"
+        case .terms: LanguageManager.shared.localizedString("legal.terms.title")
+        case .privacy: LanguageManager.shared.localizedString("legal.privacy.title")
         }
     }
 
     var highlightedTitle: String {
         switch self {
-        case .terms: "Condiciones"
-        case .privacy: "Privacidad"
+        case .terms: LanguageManager.shared.localizedString("legal.terms.highlightedTitle")
+        case .privacy: LanguageManager.shared.localizedString("legal.privacy.highlightedTitle")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .terms:
-            "Lea detenidamente estos términos antes de utilizar los servicios de Kinetic. Al acceder a nuestra plataforma, usted acepta estar sujeto a estas condiciones."
-        case .privacy:
-            "Su privacidad es primordial para nosotros. Este documento detalla cómo Kinetic recopila, utiliza y protege su información personal y los datos de su vehículo."
+        case .terms: LanguageManager.shared.localizedString("legal.terms.subtitle")
+        case .privacy: LanguageManager.shared.localizedString("legal.privacy.subtitle")
         }
     }
 
     var backTitle: String {
         switch self {
-        case .terms: "Settings"
-        case .privacy: "Configuración"
+        case .terms: LanguageManager.shared.localizedString("legal.terms.backTitle")
+        case .privacy: LanguageManager.shared.localizedString("legal.privacy.backTitle")
         }
     }
 
@@ -54,6 +53,8 @@ enum LegalType: Identifiable {
 
 struct LegalView: View {
     let type: LegalType
+    @State private var htmlContent: String?
+    @State private var isLoading = true
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -81,61 +82,92 @@ struct LegalView: View {
             .padding(.vertical, 12)
             .background(Color.white)
 
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 0) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 16) {
-                        // Badge
-                        Text(type.badge)
-                            .font(.inter(11, weight: .bold))
-                            .tracking(1)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(.stravaOrange)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+            if isLoading {
+                Spacer()
+                SpinningView()
+                Spacer()
+            } else {
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        // Header
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text(type.badge)
+                                .font(.inter(11, weight: .bold))
+                                .tracking(1)
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(.stravaOrange)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
 
-                        // Title
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text(type.title)
-                                .font(.inter(32, weight: .bold))
-                                .foregroundStyle(.coal)
-                            Text(type.highlightedTitle)
-                                .font(.inter(32, weight: .bold))
-                                .foregroundStyle(.stravaOrange)
+                            VStack(alignment: .leading, spacing: 0) {
+                                Text(type.title)
+                                    .font(.inter(32, weight: .bold))
+                                    .foregroundStyle(.coal)
+                                Text(type.highlightedTitle)
+                                    .font(.inter(32, weight: .bold))
+                                    .foregroundStyle(.stravaOrange)
+                            }
+
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(.rust)
+                                .frame(width: 60, height: 4)
+
+                            Text(type.subtitle)
+                                .font(.inter(15, weight: .regular))
+                                .foregroundStyle(.gravel)
+                                .lineSpacing(4)
                         }
-
-                        // Divider line
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(.rust)
-                            .frame(width: 60, height: 4)
-
-                        // Subtitle
-                        Text(type.subtitle)
-                            .font(.inter(15, weight: .regular))
-                            .foregroundStyle(.gravel)
-                            .lineSpacing(4)
-                    }
-                    .padding(.horizontal, 24)
-                    .padding(.top, 32)
-                    .padding(.bottom, 24)
-
-                    // HTML content
-                    LegalHTMLView(fileName: type.htmlFileName)
-                        .frame(minHeight: 600)
                         .padding(.horizontal, 24)
+                        .padding(.top, 32)
+                        .padding(.bottom, 24)
+
+                        // HTML content
+                        if let htmlContent {
+                            LegalHTMLView(htmlString: htmlContent)
+                                .frame(minHeight: 600)
+                                .padding(.horizontal, 24)
+                        }
+                    }
                 }
             }
         }
         .background(.fog)
         .navigationBarHidden(true)
+        .task {
+            await loadHTML()
+        }
+    }
+
+    private func loadHTML() async {
+        // Try remote from Supabase
+        if let client = SupabaseManager.shared.client {
+            do {
+                let url = try client.storage
+                    .from("legal")
+                    .getPublicURL(path: "\(type.htmlFileName).html")
+
+                let (data, _) = try await URLSession.shared.data(from: url)
+                if let html = String(data: data, encoding: .utf8) {
+                    htmlContent = html
+                    isLoading = false
+                    return
+                }
+            } catch {
+                print("[LegalView] Failed to load remote HTML: \(error)")
+            }
+        }
+
+        // No fallback — show empty
+        htmlContent = "<p>Content unavailable</p>"
+        isLoading = false
     }
 }
 
 // MARK: - HTML WebView
 
 struct LegalHTMLView: UIViewRepresentable {
-    let fileName: String
+    let htmlString: String
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
@@ -146,26 +178,14 @@ struct LegalHTMLView: UIViewRepresentable {
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
-        if let url = Bundle.main.url(forResource: fileName, withExtension: "html") {
-            webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
-        }
+        webView.loadHTMLString(htmlString, baseURL: nil)
     }
 }
 
 #Preview("Terms") {
-    NavigationStack {
-        Color.clear
-            .navigationDestination(isPresented: .constant(true)) {
-                LegalView(type: .terms)
-            }
-    }
+    LegalView(type: .terms)
 }
 
 #Preview("Privacy") {
-    NavigationStack {
-        Color.clear
-            .navigationDestination(isPresented: .constant(true)) {
-                LegalView(type: .privacy)
-            }
-    }
+    LegalView(type: .privacy)
 }

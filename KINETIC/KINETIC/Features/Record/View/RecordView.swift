@@ -17,28 +17,33 @@ enum RecordMode: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .gpx: "Import GPX Route"
-        case .liveOverlay: "RECORD WITH LIVE OVERLAY"
-        case .dataOnly: "Start Data-Only Tracking"
+        case .gpx: LanguageManager.shared.localizedString("record.gpx.title")
+        case .liveOverlay: LanguageManager.shared.localizedString("record.liveOverlay.title")
+        case .dataOnly: LanguageManager.shared.localizedString("record.dataOnly.title")
         }
     }
 
     var subtitle: String {
         switch self {
-        case .gpx: "Load a pre-defined track or trail"
-        case .liveOverlay: "Video capture with real-time telemetry"
-        case .dataOnly: "Minimal battery usage, pure GPS logs"
+        case .gpx: LanguageManager.shared.localizedString("record.gpx.subtitle")
+        case .liveOverlay: LanguageManager.shared.localizedString("record.liveOverlay.subtitle")
+        case .dataOnly: LanguageManager.shared.localizedString("record.dataOnly.subtitle")
         }
     }
 
     var isHighlighted: Bool {
         self == .liveOverlay
     }
+
+    var isLocked: Bool {
+        self == .gpx
+    }
 }
 
 struct RecordView: View {
     @Environment(MainTabCoordinator.self) private var tabCoordinator
     @State private var showTrackingConfig = false
+    @State private var showLiveOverlay = false
     @State private var trackingPath: [RecordRoute] = []
 
     private var path: Binding<[RecordRoute]> {
@@ -52,13 +57,13 @@ struct RecordView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 // Header
-                Text("SELECT MODE")
+                Text(localized: "record.selectMode")
                     .font(.inter(28, weight: .black))
                     .italic()
                     .foregroundStyle(.stravaOrange)
                     .padding(.top, 24)
 
-                Text("Choose how you want to track your performance session today.")
+                Text(localized: "record.selectMode.subtitle")
                     .font(.inter(15, weight: .regular))
                     .foregroundStyle(.gravel)
                     .padding(.top, 8)
@@ -67,7 +72,9 @@ struct RecordView: View {
                 VStack(spacing: 14) {
                     ForEach(RecordMode.allCases) { mode in
                         RecordModeCard(mode: mode) {
-                            if mode == .dataOnly {
+                            if mode == .liveOverlay {
+                                showLiveOverlay = true
+                            } else if mode == .dataOnly {
                                 showTrackingConfig = true
                             }
                         }
@@ -86,6 +93,9 @@ struct RecordView: View {
                 Image("logoNavBar")
             }
         }
+        .fullScreenCover(isPresented: $showLiveOverlay) {
+            LiveOverlayView(onCloseAll: { showLiveOverlay = false })
+        }
         .fullScreenCover(isPresented: $showTrackingConfig) {
             trackingPath = []
         } content: {
@@ -98,7 +108,14 @@ struct RecordView: View {
                                 trackingPath = [.recording]
                             }
                         case .recording:
-                            LiveTrackingView()
+                            LiveTrackingView(onCloseAll: { showTrackingConfig = false })
+                                .navigationBarBackButtonHidden(true)
+                        case .routeSetup:
+                            RouteSetupView(path: $trackingPath)
+                        case .waitingForStart(let start, let end):
+                            WaitingForStartView(startCoordinate: start, endCoordinate: end, path: $trackingPath)
+                        case .scheduledRecording(let end):
+                            LiveTrackingView(endCoordinate: end, onCloseAll: { showTrackingConfig = false })
                                 .navigationBarBackButtonHidden(true)
                         default:
                             EmptyView()
@@ -139,13 +156,13 @@ struct RecordModeCard: View {
 
                 Spacer()
 
-                // Arrow
-                Image(systemName: "chevron.right")
+                // Arrow or lock
+                Image(systemName: mode.isLocked ? "lock.fill" : "chevron.right")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(mode.isHighlighted ? .stravaOrange : .gravel.opacity(0.4))
+                    .foregroundStyle(mode.isLocked ? .gravel.opacity(0.8) : mode.isHighlighted ? .stravaOrange : .gravel.opacity(0.8))
             }
             .padding(16)
-            .background(mode.isHighlighted ? Color.stravaOrange.opacity(0.08) : .white)
+            .background(mode.isLocked ? Color.white.opacity(0.5) : mode.isHighlighted ? Color.stravaOrange.opacity(0.08) : .white)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
@@ -153,6 +170,7 @@ struct RecordModeCard: View {
             )
         }
         .buttonStyle(.plain)
+        .disabled(mode.isLocked)
     }
 }
 

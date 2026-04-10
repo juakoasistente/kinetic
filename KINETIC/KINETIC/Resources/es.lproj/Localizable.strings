@@ -28,6 +28,7 @@
 
 /* Player */
 "player.title" = "Reproductor";
+"player.back" = "Reproductor";
 "player.sessionDetails" = "Detalles de Sesión";
 "player.distance" = "DISTANCIA";
 "player.elevation" = "ELEVACIÓN";
@@ -35,6 +36,9 @@
 "player.consumption" = "CONSUMO";
 "player.download" = "DESCARGAR";
 "player.delete" = "ELIMINAR";
+"player.speed" = "VELOCIDAD";
+"player.gForce" = "FUERZA G";
+"player.sessionTime" = "TIEMPO DE SESIÓN";
 
 /* Record */
 "record.selectMode" = "SELECCIONA MODO";
@@ -45,6 +49,33 @@
 "record.liveOverlay.subtitle" = "Captura de vídeo con telemetría en tiempo real";
 "record.dataOnly.title" = "Tracking Solo Datos";
 "record.dataOnly.subtitle" = "Uso mínimo de batería, solo logs GPS";
+
+/* Tracking */
+"tracking.configTitle" = "CONFIGURAR TRACKING";
+"tracking.freeRecord" = "REGISTRO LIBRE";
+"tracking.freeRecord.subtitle" = "Pulsa play para empezar y stop para terminar manualmente.";
+"tracking.scheduled" = "TRAMO PROGRAMADO";
+"tracking.scheduled.subtitle" = "Define un punto de inicio y fin (A → B) para el autostart.";
+"tracking.confirm" = "CONFIRMAR Y EMPEZAR";
+"tracking.pause" = "PAUSAR TRACKING";
+"tracking.resume" = "REANUDAR TRACKING";
+"tracking.stop" = "PARAR TRACKING";
+
+/* Live Tracking */
+"live.maxSpeed" = "VELOCIDAD MÁX";
+"live.avgSpeed" = "VELOCIDAD MEDIA";
+"live.distance" = "DISTANCIA";
+"live.time" = "TIEMPO";
+
+/* Trip Summary */
+"trip.complete" = "VIAJE COMPLETADO";
+"trip.maxSpeed" = "VEL. MÁXIMA";
+"trip.distance" = "DISTANCIA";
+"trip.avgSpeed" = "VEL. MEDIA";
+"trip.time" = "TIEMPO";
+"trip.share" = "COMPARTIR ACTIVIDAD";
+"trip.save" = "GUARDAR EN HISTORIAL";
+"trip.namePlaceholder" = "Nombre del viaje (ej: Ruta por la sierra)";
 
 /* Settings */
 "settings.title" = "Ajustes";
@@ -60,6 +91,13 @@
 "settings.privacyPolicy" = "Política de Privacidad";
 "settings.termsOfService" = "Términos de Servicio";
 "settings.logout" = "CERRAR SESIÓN";
+"settings.logoutTitle" = "Cerrar Sesión";
+"settings.logoutMessage" = "¿Estás seguro de que quieres cerrar sesión?";
+"settings.cancel" = "Cancelar";
+"settings.back" = "Configuración";
+"settings.updatePhoto" = "Actualizar Foto de Perfil";
+"settings.takePhoto" = "Tomar Foto";
+"settings.chooseGallery" = "Elegir de Galería";
 
 /* Language */
 "language.subtitle" = "Selecciona tu idioma preferido";
@@ -73,5 +111,130 @@
 "profile.save" = "Guardar Cambios del Perfil";
 "profile.updatePhoto" = "TOCA PARA ACTUALIZAR FOTO";
 
+/* Legal */
+"legal.badge" = "LEGAL";
+"legal.terms.title" = "Términos y";
+"legal.terms.highlightedTitle" = "Condiciones";
+"legal.terms.subtitle" = "Lea detenidamente estos términos antes de utilizar los servicios de Kinetic. Al acceder a nuestra plataforma, usted acepta estar sujeto a estas condiciones.";
+"legal.terms.backTitle" = "Configuración";
+"legal.privacy.title" = "Política de";
+"legal.privacy.highlightedTitle" = "Privacidad";
+"legal.privacy.subtitle" = "Su privacidad es primordial para nosotros. Este documento detalla cómo Kinetic recopila, utiliza y protege su información personal y los datos de su vehículo.";
+"legal.privacy.backTitle" = "Configuración";
+
+/* Profile extras */
+"profile.descriptionPlaceholder" = "Escribe tu descripción...";
+"profile.previewName" = "Tu Nombre";
+"profile.previewBio" = "Tu bio";
+
+/* Route Setup */
+"tracking.routeSetup.title" = "CONFIGURAR RUTA";
+"tracking.routeSetup.tapStart" = "Toca el mapa para colocar el punto de inicio";
+"tracking.routeSetup.tapEnd" = "Ahora toca para colocar el punto final";
+"tracking.routeSetup.distance" = "Distancia entre puntos";
+"tracking.routeSetup.confirm" = "CONFIRMAR RUTA";
+"tracking.routeSetup.reset" = "Toca el mapa para resetear puntos";
+"tracking.routeSetup.searchPlaceholder" = "Buscar dirección...";
+"tracking.routeSetup.startLabel" = "A - Inicio";
+"tracking.routeSetup.endLabel" = "B - Fin";
+"tracking.waiting.title" = "ESPERANDO PUNTO DE INICIO...";
+"tracking.waiting.toStart" = "al punto de inicio";
+"tracking.waiting.cancel" = "CANCELAR";
+
 /* Share */
 "share.title" = "Compartir";
+
+/* Feed */
+"feed.maxSpeed" = "VEL. MÁX";
+"feed.distance" = "DISTANCIA";
+"feed.duration" = "DURACIÓN";
+"feed.comments" = "Comentarios";
+"feed.noComments" = "Sin comentarios aún. ¡Sé el primero!";
+"feed.addComment" = "Añadir un comentario...";
+"feed.loading" = "Cargando feed...";
+"feed.empty.title" = "Sin Publicaciones";
+"feed.empty.subtitle" = "Comparte tu primera sesión de conducción con la comunidad.";
+"feed.empty.button" = "Crear Publicación";
+
+/* New Post */
+"newPost.title" = "NUEVA PUBLICACIÓN";
+"newPost.publish" = "Publicar";
+"newPost.selectActivity" = "SELECCIONA TU ACTIVIDAD";
+"newPost.telemetry" = "EXTRACCIÓN DE TELEMETRÍA";
+"newPost.description" = "DESCRIPCIÓN";
+"newPost.descriptionPlaceholder" = "Cuéntale a la comunidad sobre esta ruta...";
+"newPost.photos" = "FOTOS";
+"newPost.community" = "COMUNIDAD";
+
+/* Clips */
+"clips.title" = "Todos los Clips.";
+"clips.delete" = "Eliminar";
+"clips.empty.title" = "Sin Clips";
+"clips.empty.subtitle" = "Tus clips de vídeo de sesiones de conducción aparecerán aquí.";
+
+/* Onboarding */
+"onboarding.1.title" = "COMUNIDAD";
+"onboarding.1.highlight" = "KINETIC";
+"onboarding.1.subtitle" = "Descubre los mejores tramos cerca de ti y comparte tus hazañas con otros apasionados del motor.";
+"onboarding.2.title" = "REGISTRA";
+"onboarding.2.highlight" = "CADA MOMENTO";
+"onboarding.2.subtitle" = "Graba tus rutas con telemetría en tiempo real. Velocidad, distancia, G-force y datos en directo sobre el vídeo.";
+"onboarding.3.title" = "COMPARTE";
+"onboarding.3.highlight" = "TU ESTILO";
+"onboarding.3.subtitle" = "Crea reels con tus mejores momentos, comparte tarjetas con tus stats y publica en redes sociales.";
+"onboarding.4.title" = "TÚ";
+"onboarding.4.highlight" = "DECIDES";
+"onboarding.4.subtitle" = "Publica para competir con la comunidad o guárdalo todo en privado. Tus rutas, tus reglas.";
+"onboarding.next" = "SIGUIENTE";
+"onboarding.start" = "EMPEZAR";
+"onboarding.skip" = "SALTAR";
+
+/* Overlay */
+"overlay.rec" = "REC";
+"overlay.kmh" = "KM/H";
+"overlay.tapToRecord" = "PULSA PARA GRABAR";
+"overlay.preparingCamera" = "Preparando cámara...";
+"overlay.processingOverlay" = "Procesando overlay...";
+"overlay.chooseOrientation" = "ELIGE ORIENTACIÓN";
+"overlay.orientationSubtitle" = "Selecciona antes de grabar.\nNo se puede cambiar durante la sesión.";
+"overlay.startRecording" = "EMPEZAR A GRABAR";
+"overlay.chooseOverlay" = "ELIGE OVERLAY";
+"overlay.overlaySubtitle" = "Esto aparecerá en tu vídeo";
+"overlay.continue" = "CONTINUAR";
+
+/* Share */
+"share.chooseStyle" = "ELIGE ESTILO";
+"share.share" = "COMPARTIR";
+
+/* Reel */
+"reel.createReel" = "CREAR REEL";
+"reel.structure" = "ESTRUCTURA DEL REEL";
+"reel.intro" = "Intro";
+"reel.highlights" = "Highlights";
+"reel.summary" = "Resumen";
+"reel.estimatedReel" = "Reel estimado:";
+"reel.generating" = "GENERANDO...";
+"reel.selectHighlights" = "SELECCIONAR HIGHLIGHTS";
+"reel.addClip" = "Añadir clip";
+"reel.totalHighlights" = "de highlights seleccionados";
+
+/* Stats */
+"stats.time" = "Tiempo";
+"stats.distance" = "Distancia";
+"stats.avgSpeed" = "Vel. Media";
+"stats.maxSpeed" = "Vel. Máx";
+"stats.max" = "MÁX";
+"stats.avg" = "MED";
+"stats.dist" = "DIST";
+"stats.speed" = "VELOCIDAD";
+
+/* Trip */
+"trip.namePlaceholder" = "Nombre del viaje (ej: Ruta por la sierra)";
+
+/* Overlay Settings */
+"settings.overlay.speed" = "Velocidad";
+"settings.overlay.maxSpeed" = "Velocidad Máxima";
+"settings.overlay.avgSpeed" = "Velocidad Media";
+"settings.overlay.distance" = "Distancia";
+"settings.overlay.time" = "Tiempo";
+"settings.overlay.miniMap" = "Mini Mapa";

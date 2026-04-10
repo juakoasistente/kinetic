@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>KINETIC needs access to save your driving videos to your photo library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>KINETIC needs microphone access to record audio with your driving videos.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>kinetic.KINETIC</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kinetic</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

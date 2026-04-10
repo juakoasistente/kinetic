@@ -2,11 +2,28 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var tabCoordinator = MainTabCoordinator()
+    @Environment(LanguageManager.self) private var languageManager
 
     var body: some View {
         VStack(spacing: 0) {
             // Content
             ZStack {
+                // Feed tab hidden until ready
+                // NavigationStack(path: $tabCoordinator.feedPath) {
+                //     FeedView()
+                //         .navigationDestination(for: FeedRoute.self) { route in
+                //             switch route {
+                //             case .postDetail(let post):
+                //                 PostDetailView(post: post)
+                //             case .newPost:
+                //                 NewPostView()
+                //             case .clips:
+                //                 ClipsListView()
+                //             }
+                //         }
+                // }
+                // .opacity(tabCoordinator.selectedTab == .feed ? 1 : 0)
+
                 NavigationStack(path: $tabCoordinator.recordPath) {
                     RecordView()
                 }
@@ -27,6 +44,7 @@ struct MainTabView: View {
             KineticTabBar(selectedTab: $tabCoordinator.selectedTab)
         }
         .environment(tabCoordinator)
+        .id(languageManager.refreshId)
     }
 }
 
@@ -69,14 +87,16 @@ struct KineticTabBar: View {
 extension MainTab {
     var title: String {
         switch self {
-        case .record: "Record"
-        case .history: "History"
-        case .settings: "Settings"
+        // case .feed: LanguageManager.shared.localizedString("tab.feed")
+        case .record: LanguageManager.shared.localizedString("tab.record")
+        case .history: LanguageManager.shared.localizedString("tab.history")
+        case .settings: LanguageManager.shared.localizedString("tab.settings")
         }
     }
 
     func icon(selected: Bool) -> String {
         switch self {
+        // case .feed: selected ? "feedSelected" : "feed"
         case .record: selected ? "recordSelected" : "record"
         case .history: selected ? "historySelected" : "history"
         case .settings: selected ? "settingsSelected" : "settings"

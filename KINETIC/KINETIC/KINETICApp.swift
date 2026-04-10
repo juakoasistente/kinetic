@@ -10,6 +10,7 @@ import CoreText
 
 @main
 struct KINETICApp: App {
+    @UIApplicationDelegateAdaptor(KINETICAppDelegate.self) var appDelegate
     @State private var languageManager = LanguageManager.shared
 
     init() {

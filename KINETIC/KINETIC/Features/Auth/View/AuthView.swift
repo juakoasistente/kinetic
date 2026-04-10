@@ -1,7 +1,9 @@
 import SwiftUI
+import AuthenticationServices
 
 struct AuthView: View {
     let coordinator: AppCoordinator
+    @State private var viewModel = AuthViewModel()
 
     var body: some View {
         ZStack {
@@ -19,76 +21,62 @@ struct AuthView: View {
                 Spacer()
 
                 Text("KINETIC")
-                    .font(.inter(24, weight: .black))
+                    .font(.inter(32, weight: .black))
                     .foregroundStyle(Color(hex: 0xA73400))
 
-                Text("Ready to\ndrive?")
-                    .font(.inter(40, weight: .extraBold))
+                Text(localized: "auth.title")
+                    .font(.inter(58, weight: .extraBold))
                     .foregroundStyle(Color(hex: 0x1A1C1E))
                     .padding(.top, 12)
 
-                Text("Join the Kinetic community.")
-                    .font(.inter(16, weight: .regular))
+                Text(localized: "auth.subtitle")
+                    .font(.inter(24, weight: .regular))
                     .foregroundStyle(Color(hex: 0x5F5E5E))
                     .padding(.top, 8)
 
                 Spacer()
 
-                // Apple button
-                Button {
-                    coordinator.showMain()
-                } label: {
-                    HStack(spacing: 12) {
-                        Image("apple")
-                            .renderingMode(.template)
-                        Text("Continue with Apple")
-                            .font(.inter(16, weight: .bold))
+                // Apple Sign In
+                SignInWithAppleButton(.signIn) { request in
+                    request.requestedScopes = [.fullName, .email]
+                } onCompletion: { result in
+                    Task {
+                        await viewModel.handleAppleSignIn(result: result)
+                        if SupabaseManager.shared.isAuthenticated {
+                            coordinator.showMain()
+                        }
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(.black)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
+                .signInWithAppleButtonStyle(.black)
+                .frame(height: 52)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                // Google button
-                Button {
-                    coordinator.showMain()
-                } label: {
-                    HStack(spacing: 12) {
-                        Image("google")
-                        Text("Continue with Google")
-                            .font(.inter(16, weight: .bold))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(.white)
-                    .foregroundStyle(.black)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(.white.opacity(0.4), lineWidth: 1)
-                    )
+                // Loading indicator
+                if viewModel.isLoading {
+                    SpinningView()
+                        .scaleEffect(0.5)
+                        .padding(.top, 16)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
                 }
-                .padding(.top, 12)
 
                 Spacer()
 
                 // Terms
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("BY CONTINUING, YOU AGREE TO OUR")
+                    Text(localized: "auth.termsPrefix")
                         .font(.inter(10, weight: .medium))
                         .tracking(1)
                         .foregroundStyle(Color(hex: 0x5F5E5E))
 
                     HStack(spacing: 4) {
-                        Text("TERMS OF SERVICE")
+                        Text(localized: "auth.termsOfService")
                             .font(.inter(10, weight: .medium))
                             .foregroundStyle(Color(hex: 0xA73400))
-                        Text("AND")
+                        Text(localized: "auth.and")
                             .font(.inter(10, weight: .medium))
                             .foregroundStyle(Color(hex: 0x5F5E5E))
-                        Text("PRIVACY POLICY")
+                        Text(localized: "auth.privacyPolicy")
                             .font(.inter(10, weight: .medium))
                             .foregroundStyle(Color(hex: 0xA73400))
                         Text(".")
@@ -96,10 +84,18 @@ struct AuthView: View {
                             .foregroundStyle(Color(hex: 0x5F5E5E))
                     }
                 }
-                
+
                 Spacer()
             }
             .padding(24)
+        }
+        .alert("Error", isPresented: .init(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button("OK") { viewModel.errorMessage = nil }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
     }
 }
