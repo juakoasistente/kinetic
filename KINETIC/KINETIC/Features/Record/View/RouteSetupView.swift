@@ -237,6 +237,7 @@ struct RouteSetupView: View {
         }
         .background(.black)
         .navigationBarHidden(true)
+        .dismissKeyboardOnTap()
         .swipeBack { dismiss() }
     }
 

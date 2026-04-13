@@ -14,7 +14,9 @@ final class SettingsViewModel {
     // MARK: - Profile
 
     var userName = ""
+    var userBio = ""
     var userTier = ""
+    var userAvatarUrl: String?
 
     // MARK: - State
 
@@ -27,6 +29,11 @@ final class SettingsViewModel {
     private var hasLoaded = false
 
     // MARK: - Load
+
+    func forceReload() {
+        hasLoaded = false
+        loadIfNeeded()
+    }
 
     func loadIfNeeded() {
         guard !hasLoaded else { return }
@@ -71,7 +78,9 @@ final class SettingsViewModel {
         do {
             let profile = try await ProfileService.shared.fetchProfile(userId: userId)
             self.userName = profile.nickname
+            self.userBio = profile.bio
             self.userTier = profile.tier
+            self.userAvatarUrl = profile.avatarUrl
         } catch {
             print("[SettingsVM] Failed to load profile: \(error.localizedDescription)")
         }

@@ -110,6 +110,12 @@ struct SettingsView: View {
                 EditProfileView()
             }
         }
+        .onChange(of: showEditProfile) { _, isShowing in
+            if !isShowing {
+                // Reload profile after editing
+                viewModel.forceReload()
+            }
+        }
         .fullScreenCover(item: $showLegal) { type in
             LegalView(type: type)
         }
@@ -143,14 +149,30 @@ struct SettingsView: View {
     private var profileCard: some View {
         HStack(spacing: 16) {
             ZStack(alignment: .bottomTrailing) {
-                Circle()
-                    .fill(Color.gravel.opacity(0.3))
-                    .frame(width: 64, height: 64)
-                    .overlay {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 28))
-                            .foregroundStyle(.gravel)
+                if let avatarUrl = viewModel.userAvatarUrl, let url = URL(string: avatarUrl) {
+                    AsyncImage(url: url) { image in
+                        image.resizable().scaledToFill()
+                    } placeholder: {
+                        Circle()
+                            .fill(Color.gravel.opacity(0.3))
+                            .overlay {
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundStyle(.gravel)
+                            }
                     }
+                    .frame(width: 64, height: 64)
+                    .clipShape(Circle())
+                } else {
+                    Circle()
+                        .fill(Color.gravel.opacity(0.3))
+                        .frame(width: 64, height: 64)
+                        .overlay {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.gravel)
+                        }
+                }
 
                 Image("edit")
                     .resizable()
@@ -158,9 +180,17 @@ struct SettingsView: View {
                     .frame(width: 22, height: 22)
             }
 
-            Text(viewModel.userName.isEmpty ? "KINETIC User" : viewModel.userName)
-                .font(.inter(18, weight: .bold))
-                .foregroundStyle(.coal)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(viewModel.userName.isEmpty ? "KINETIC User" : viewModel.userName)
+                    .font(.inter(18, weight: .bold))
+                    .foregroundStyle(.coal)
+                if !viewModel.userBio.isEmpty {
+                    Text(viewModel.userBio)
+                        .font(.inter(13, weight: .regular))
+                        .foregroundStyle(.gravel)
+                        .lineLimit(2)
+                }
+            }
 
             Spacer()
         }

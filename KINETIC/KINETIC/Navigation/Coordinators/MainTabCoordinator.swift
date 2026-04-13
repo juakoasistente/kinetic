@@ -2,7 +2,7 @@ import SwiftUI
 import CoreLocation
 
 enum MainTab: String, CaseIterable {
-    // case feed  // Hidden until feed is ready
+    case feed
     case record
     case history
     case settings
@@ -10,7 +10,7 @@ enum MainTab: String, CaseIterable {
 
 @Observable
 final class MainTabCoordinator {
-    var selectedTab: MainTab = .record
+    var selectedTab: MainTab = .feed
     var feedPath: [FeedRoute] = []
     var recordPath: [RecordRoute] = []
     var historyPath: [HistoryRoute] = []

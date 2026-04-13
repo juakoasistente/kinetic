@@ -26,6 +26,7 @@ struct PostDetailView: View {
             }
         }
         .background(Color.fog)
+        .dismissKeyboardOnTap()
         .safeAreaInset(edge: .bottom) {
             commentInputBar
         }

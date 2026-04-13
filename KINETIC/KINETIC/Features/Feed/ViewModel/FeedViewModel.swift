@@ -14,12 +14,11 @@ final class FeedViewModel {
         errorMessage = nil
         offset = 0
         do {
-            let fetched = try await PostService.shared.fetchFeed(limit: pageSize, offset: 0)
-            posts = fetched.isEmpty ? Post.mockData : fetched
+            posts = try await PostService.shared.fetchFeed(limit: pageSize, offset: 0)
             offset = posts.count
         } catch {
-            // Fallback to mock data when Supabase is not configured
-            posts = Post.mockData
+            print("[FeedVM] Failed to load feed: \(error)")
+            errorMessage = error.localizedDescription
         }
         isLoading = false
     }

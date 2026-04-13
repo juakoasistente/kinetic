@@ -1,4 +1,6 @@
 import SwiftUI
+import CoreLocation
+import UniformTypeIdentifiers
 
 enum RecordMode: String, CaseIterable, Identifiable {
     case gpx
@@ -36,7 +38,7 @@ enum RecordMode: String, CaseIterable, Identifiable {
     }
 
     var isLocked: Bool {
-        self == .gpx
+        false
     }
 }
 
@@ -44,6 +46,9 @@ struct RecordView: View {
     @Environment(MainTabCoordinator.self) private var tabCoordinator
     @State private var showTrackingConfig = false
     @State private var showLiveOverlay = false
+    @State private var showGPXPicker = false
+    @State private var showGPXPreview = false
+    @State private var importedGPXRoute: GPXRoute?
     @State private var trackingPath: [RecordRoute] = []
 
     private var path: Binding<[RecordRoute]> {
@@ -72,7 +77,9 @@ struct RecordView: View {
                 VStack(spacing: 14) {
                     ForEach(RecordMode.allCases) { mode in
                         RecordModeCard(mode: mode) {
-                            if mode == .liveOverlay {
+                            if mode == .gpx {
+                                showGPXPicker = true
+                            } else if mode == .liveOverlay {
                                 showLiveOverlay = true
                             } else if mode == .dataOnly {
                                 showTrackingConfig = true
@@ -121,6 +128,34 @@ struct RecordView: View {
                             EmptyView()
                         }
                     }
+            }
+        }
+        .fileImporter(
+            isPresented: $showGPXPicker,
+            allowedContentTypes: [UTType(filenameExtension: "gpx") ?? .xml],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                let accessing = url.startAccessingSecurityScopedResource()
+                defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+                if let parsed = GPXParser.parse(url: url) {
+                    importedGPXRoute = parsed
+                    showGPXPreview = true
+                }
+            case .failure(let error):
+                print("[GPX] Import failed: \(error.localizedDescription)")
+            }
+        }
+        .fullScreenCover(isPresented: $showGPXPreview) {
+            if let route = importedGPXRoute {
+                GPXPreviewView(
+                    routeName: route.name,
+                    coordinates: route.coordinates,
+                    gpxRoute: route,
+                    onClose: { showGPXPreview = false }
+                )
             }
         }
     }

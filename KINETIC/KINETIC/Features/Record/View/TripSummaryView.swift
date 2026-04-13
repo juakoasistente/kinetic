@@ -218,6 +218,7 @@ struct TripSummaryView: View {
             }
         }
         .background(.black)
+        .dismissKeyboardOnTap()
         .task {
             async let snapshotTask: Void = {
                 mapSnapshot = await MapSnapshotHelper.generateSnapshot(coordinates: routeCoordinates)
@@ -435,7 +436,12 @@ struct TripSummaryView: View {
             print("[TripSummary] Failed to save session: \(error)")
         }
 
-        dismiss()
+        // Close everything — back to Record tab
+        if let onClose {
+            onClose()
+        } else {
+            dismiss()
+        }
     }
 
     private func statCard(label: String, value: String, unit: String) -> some View {

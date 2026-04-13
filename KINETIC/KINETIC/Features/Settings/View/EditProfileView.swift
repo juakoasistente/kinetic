@@ -201,6 +201,7 @@ struct EditProfileView: View {
         }
         .background(.fog)
         .navigationBarHidden(true)
+        .dismissKeyboardOnTap()
         .swipeBack { dismiss() }
         .task { await loadProfile() }
         .alert("Error", isPresented: Binding(

@@ -1,5 +1,6 @@
 import SwiftUI
 import AVKit
+import MapKit
 
 struct PlayerView: View {
     let sessionId: UUID
@@ -43,114 +44,28 @@ struct PlayerView: View {
 
             ScrollView {
                 VStack(spacing: 0) {
-                    // Video player area with overlays
-                    ZStack(alignment: .bottom) {
-                        // Video player or placeholder
-                        if let avPlayer {
-                            VideoPlayer(player: avPlayer)
-                                .aspectRatio(16 / 10, contentMode: .fit)
-                        } else {
-                            Rectangle()
-                                .fill(Color.asphalt)
-                                .aspectRatio(16 / 10, contentMode: .fit)
-                                .overlay {
-                                    if viewModel.session?.hasVideo == true {
-                                        SpinningView()
-                                            .scaleEffect(0.6)
-                                    } else {
-                                        Image(systemName: "play.fill")
-                                            .font(.system(size: 40))
-                                            .foregroundStyle(.white.opacity(0.3))
-                                    }
-                                }
-                        }
-
-                        // Telemetry overlays — dynamic if snapshots available
-                        HStack(alignment: .bottom) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                // Speed
-                                telemetryOverlay {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(localized: "player.speed")
-                                            .font(.inter(8, weight: .bold))
-                                            .tracking(1)
-                                            .foregroundStyle(.white.opacity(0.7))
-                                        HStack(alignment: .firstTextBaseline, spacing: 2) {
-                                            Text(viewModel.hasDynamicData ? viewModel.liveSpeed : viewModel.speedValue)
-                                                .font(.inter(32, weight: .black))
-                                                .foregroundStyle(.stravaOrange)
-                                                .contentTransition(.numericText())
-                                            Text("KM/H")
-                                                .font(.inter(11, weight: .bold))
-                                                .foregroundStyle(.white.opacity(0.7))
-                                        }
-                                    }
-                                }
-
-                                // Distance
-                                telemetryOverlay {
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(localized: "player.distance")
-                                            .font(.inter(8, weight: .bold))
-                                            .tracking(1)
-                                            .foregroundStyle(.white.opacity(0.7))
-                                        HStack(alignment: .firstTextBaseline, spacing: 2) {
-                                            Text(viewModel.hasDynamicData ? viewModel.liveDistance : viewModel.distanceValue)
-                                                .font(.inter(28, weight: .black))
-                                                .foregroundStyle(.white)
-                                                .contentTransition(.numericText())
-                                            Text("KM")
-                                                .font(.inter(12, weight: .bold))
-                                                .foregroundStyle(.white.opacity(0.5))
-                                        }
-                                    }
-                                }
-                            }
-
-                            Spacer()
-
-                            // Session time
-                            telemetryOverlay {
-                                VStack(spacing: 2) {
-                                    Text(localized: "player.sessionTime")
-                                        .font(.inter(8, weight: .bold))
-                                        .tracking(1)
-                                        .foregroundStyle(.white.opacity(0.7))
-                                    Text(viewModel.hasDynamicData ? viewModel.liveTime : viewModel.formattedDuration)
-                                        .font(.inter(22, weight: .black))
-                                        .foregroundStyle(.white)
-                                        .contentTransition(.numericText())
-                                }
-                            }
-                        }
-                        .padding(12)
-
-                        // Progress bar — dynamic
-                        VStack(spacing: 0) {
-                            Spacer()
-                            GeometryReader { geo in
-                                ZStack(alignment: .leading) {
-                                    Rectangle()
-                                        .fill(Color.white.opacity(0.2))
-                                        .frame(height: 4)
-                                    Rectangle()
-                                        .fill(.stravaOrange)
-                                        .frame(width: geo.size.width * viewModel.playbackProgress, height: 4)
-                                    Circle()
-                                        .fill(.stravaOrange)
-                                        .frame(width: 12, height: 12)
-                                        .offset(x: max(0, geo.size.width * viewModel.playbackProgress - 6))
-                                }
-                            }
-                            .frame(height: 12)
-                        }
+                    // Video or Route Map
+                    if viewModel.session?.hasVideo == true {
+                        videoPlayerSection
+                    } else {
+                        routeMapSection
                     }
 
-                    // Session info - dark section
+                    // Session info
                     VStack(alignment: .leading, spacing: 8) {
                         Text(viewModel.sessionName)
                             .font(.inter(24, weight: .extraBold))
                             .foregroundStyle(.white)
+
+                        if let location = viewModel.session?.locationName, !location.isEmpty {
+                            HStack(spacing: 4) {
+                                Image(systemName: "mappin")
+                                    .font(.system(size: 10))
+                                Text(location.uppercased())
+                                    .font(.inter(11, weight: .medium))
+                            }
+                            .foregroundStyle(.gravel)
+                        }
 
                         Text(viewModel.sessionDateText)
                             .font(.inter(14, weight: .regular))
@@ -161,10 +76,10 @@ struct PlayerView: View {
                             GridItem(.flexible()),
                             GridItem(.flexible())
                         ], spacing: 12) {
+                            TelemetryCard(title: LanguageManager.shared.localizedString("player.speed"), value: viewModel.speedValue, unit: "KM/H")
                             TelemetryCard(title: LanguageManager.shared.localizedString("player.distance"), value: viewModel.distanceValue, unit: "KM")
                             TelemetryCard(title: LanguageManager.shared.localizedString("player.elevation"), value: viewModel.elevationValue, unit: "M")
-                            TelemetryCard(title: LanguageManager.shared.localizedString("player.maxAlt"), value: viewModel.maxAltitudeValue, unit: "M")
-                            TelemetryCard(title: LanguageManager.shared.localizedString("player.consumption"), value: viewModel.fuelValue, unit: "L")
+                            TelemetryCard(title: LanguageManager.shared.localizedString("player.sessionTime"), value: viewModel.formattedDuration, unit: "")
                         }
                         .padding(.top, 8)
                     }
@@ -234,6 +149,127 @@ struct PlayerView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+    }
+
+    // MARK: - Video Player Section
+
+    private var videoPlayerSection: some View {
+        ZStack(alignment: .bottom) {
+            if let avPlayer {
+                VideoPlayer(player: avPlayer)
+                    .aspectRatio(16 / 10, contentMode: .fit)
+            } else {
+                Rectangle()
+                    .fill(Color.asphalt)
+                    .aspectRatio(16 / 10, contentMode: .fit)
+                    .overlay { SpinningView().scaleEffect(0.6) }
+            }
+
+            // Live telemetry overlays
+            HStack(alignment: .bottom) {
+                telemetryOverlay {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(localized: "player.speed")
+                            .font(.inter(8, weight: .bold))
+                            .tracking(1)
+                            .foregroundStyle(.white.opacity(0.7))
+                        HStack(alignment: .firstTextBaseline, spacing: 2) {
+                            Text(viewModel.hasDynamicData ? viewModel.liveSpeed : viewModel.speedValue)
+                                .font(.inter(32, weight: .black))
+                                .foregroundStyle(.stravaOrange)
+                                .contentTransition(.numericText())
+                            Text(LanguageManager.shared.localizedString("overlay.kmh"))
+                                .font(.inter(11, weight: .bold))
+                                .foregroundStyle(.white.opacity(0.7))
+                        }
+                    }
+                }
+
+                Spacer()
+
+                telemetryOverlay {
+                    VStack(spacing: 2) {
+                        Text(localized: "player.sessionTime")
+                            .font(.inter(8, weight: .bold))
+                            .tracking(1)
+                            .foregroundStyle(.white.opacity(0.7))
+                        Text(viewModel.hasDynamicData ? viewModel.liveTime : viewModel.formattedDuration)
+                            .font(.inter(22, weight: .black))
+                            .foregroundStyle(.white)
+                            .contentTransition(.numericText())
+                    }
+                }
+            }
+            .padding(12)
+
+            // Progress bar
+            VStack(spacing: 0) {
+                Spacer()
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Rectangle().fill(Color.white.opacity(0.2)).frame(height: 4)
+                        Rectangle().fill(.stravaOrange).frame(width: geo.size.width * viewModel.playbackProgress, height: 4)
+                        Circle().fill(.stravaOrange).frame(width: 12, height: 12)
+                            .offset(x: max(0, geo.size.width * viewModel.playbackProgress - 6))
+                    }
+                }
+                .frame(height: 12)
+            }
+        }
+    }
+
+    // MARK: - Route Map Section (data-only sessions)
+
+    private var routeMapSection: some View {
+        ZStack(alignment: .bottomLeading) {
+            if !viewModel.snapshots.isEmpty {
+                let coords = viewModel.snapshots.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+                Map(initialPosition: .region(regionFor(coords))) {
+                    MapPolyline(coordinates: coords)
+                        .stroke(KineticMapStyle.routeColor, lineWidth: KineticMapStyle.routeLineWidth)
+                }
+                .mapStyle(KineticMapStyle.route)
+                .mapControlVisibility(.hidden)
+                .allowsHitTesting(false)
+                .frame(height: 260)
+            } else {
+                Rectangle()
+                    .fill(Color(hex: 0x2A2A2E))
+                    .frame(height: 260)
+                    .overlay {
+                        Image(systemName: "map")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.gravel.opacity(0.3))
+                    }
+            }
+
+            // Gradient overlay
+            LinearGradient(
+                colors: [.clear, .black.opacity(0.6)],
+                startPoint: .center,
+                endPoint: .bottom
+            )
+            .frame(height: 260)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 0))
+    }
+
+    private func regionFor(_ coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
+        let lats = coordinates.map(\.latitude)
+        let lons = coordinates.map(\.longitude)
+        guard let minLat = lats.min(), let maxLat = lats.max(),
+              let minLon = lons.min(), let maxLon = lons.max() else {
+            return MKCoordinateRegion()
+        }
+        let center = CLLocationCoordinate2D(
+            latitude: (minLat + maxLat) / 2,
+            longitude: (minLon + maxLon) / 2
+        )
+        let span = MKCoordinateSpan(
+            latitudeDelta: max((maxLat - minLat) * 1.5, 0.005),
+            longitudeDelta: max((maxLon - minLon) * 1.5, 0.005)
+        )
+        return MKCoordinateRegion(center: center, span: span)
     }
 
     // MARK: - Helpers

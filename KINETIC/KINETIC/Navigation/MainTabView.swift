@@ -8,21 +8,20 @@ struct MainTabView: View {
         VStack(spacing: 0) {
             // Content
             ZStack {
-                // Feed tab hidden until ready
-                // NavigationStack(path: $tabCoordinator.feedPath) {
-                //     FeedView()
-                //         .navigationDestination(for: FeedRoute.self) { route in
-                //             switch route {
-                //             case .postDetail(let post):
-                //                 PostDetailView(post: post)
-                //             case .newPost:
-                //                 NewPostView()
-                //             case .clips:
-                //                 ClipsListView()
-                //             }
-                //         }
-                // }
-                // .opacity(tabCoordinator.selectedTab == .feed ? 1 : 0)
+                NavigationStack(path: $tabCoordinator.feedPath) {
+                    FeedView()
+                        .navigationDestination(for: FeedRoute.self) { route in
+                            switch route {
+                            case .postDetail(let post):
+                                PostDetailView(post: post)
+                            case .newPost:
+                                NewPostView()
+                            case .clips:
+                                ClipsListView()
+                            }
+                        }
+                }
+                .opacity(tabCoordinator.selectedTab == .feed ? 1 : 0)
 
                 NavigationStack(path: $tabCoordinator.recordPath) {
                     RecordView()
@@ -40,11 +39,21 @@ struct MainTabView: View {
                 .opacity(tabCoordinator.selectedTab == .settings ? 1 : 0)
             }
 
-            // Tab Bar
-            KineticTabBar(selectedTab: $tabCoordinator.selectedTab)
+            // Tab Bar — hide when navigated into detail
+            if !isInDetailView {
+                KineticTabBar(selectedTab: $tabCoordinator.selectedTab)
+            }
         }
         .environment(tabCoordinator)
         .id(languageManager.refreshId)
+        .dismissKeyboardOnTap()
+    }
+
+    private var isInDetailView: Bool {
+        !tabCoordinator.feedPath.isEmpty ||
+        !tabCoordinator.recordPath.isEmpty ||
+        !tabCoordinator.historyPath.isEmpty ||
+        !tabCoordinator.settingsPath.isEmpty
     }
 }
 
@@ -87,7 +96,7 @@ struct KineticTabBar: View {
 extension MainTab {
     var title: String {
         switch self {
-        // case .feed: LanguageManager.shared.localizedString("tab.feed")
+        case .feed: LanguageManager.shared.localizedString("tab.feed")
         case .record: LanguageManager.shared.localizedString("tab.record")
         case .history: LanguageManager.shared.localizedString("tab.history")
         case .settings: LanguageManager.shared.localizedString("tab.settings")
@@ -96,7 +105,7 @@ extension MainTab {
 
     func icon(selected: Bool) -> String {
         switch self {
-        // case .feed: selected ? "feedSelected" : "feed"
+        case .feed: selected ? "feedSelected" : "feed"
         case .record: selected ? "recordSelected" : "record"
         case .history: selected ? "historySelected" : "history"
         case .settings: selected ? "settingsSelected" : "settings"

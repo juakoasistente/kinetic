@@ -28,6 +28,7 @@ struct NewPostView: View {
             .padding(.vertical, 16)
         }
         .background(Color.fog)
+        .dismissKeyboardOnTap()
         .navigationTitle(LanguageManager.shared.localizedString("newPost.title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
