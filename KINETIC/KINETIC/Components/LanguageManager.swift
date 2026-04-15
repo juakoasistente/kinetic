@@ -35,8 +35,15 @@ final class LanguageManager {
     var refreshId = UUID()
 
     private init() {
-        let saved = UserDefaults.standard.string(forKey: "app_language") ?? "en"
-        let language = AppLanguage(rawValue: saved) ?? .english
+        let language: AppLanguage
+        if let saved = UserDefaults.standard.string(forKey: "app_language"),
+           let savedLanguage = AppLanguage(rawValue: saved) {
+            language = savedLanguage
+        } else {
+            // Detect device language, default to English if not supported
+            let deviceLanguage = Locale.current.language.languageCode?.identifier ?? "en"
+            language = AppLanguage(rawValue: deviceLanguage) ?? .english
+        }
         self.current = language
         self.bundle = Self.loadBundle(for: language)
     }
