@@ -204,18 +204,18 @@ struct EditProfileView: View {
         .dismissKeyboardOnTap()
         .swipeBack { dismiss() }
         .task { await loadProfile() }
-        .alert("Error", isPresented: Binding(
+        .alert(LanguageManager.shared.localizedString("alert.error"), isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }
         )) {
-            Button("OK", role: .cancel) {}
+            Button(LanguageManager.shared.localizedString("alert.ok"), role: .cancel) {}
         } message: {
             Text(errorMessage ?? "")
         }
-        .confirmationDialog("Update Profile Photo", isPresented: $showPhotoOptions) {
-            Button("Take Photo") { showCamera = true }
-            Button("Choose from Gallery") { showGallery = true }
-            Button("Cancel", role: .cancel) {}
+        .confirmationDialog(LanguageManager.shared.localizedString("settings.updatePhoto"), isPresented: $showPhotoOptions) {
+            Button(LanguageManager.shared.localizedString("settings.takePhoto")) { showCamera = true }
+            Button(LanguageManager.shared.localizedString("settings.chooseGallery")) { showGallery = true }
+            Button(LanguageManager.shared.localizedString("alert.cancel"), role: .cancel) {}
         }
         .fullScreenCover(isPresented: $showCamera) {
             CameraView { image in

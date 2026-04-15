@@ -220,6 +220,9 @@ struct TripSummaryView: View {
         .background(.black)
         .dismissKeyboardOnTap()
         .task {
+            // Let the presentation animation finish before starting heavy work
+            try? await Task.sleep(for: .milliseconds(400))
+
             async let snapshotTask: Void = {
                 mapSnapshot = await MapSnapshotHelper.generateSnapshot(coordinates: routeCoordinates)
             }()
@@ -385,28 +388,9 @@ struct TripSummaryView: View {
             ? "Unnamed Trip"
             : tripName.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // Upload thumbnail to Supabase if we have one
-        var thumbnailUrl: String?
-        if let thumbnail = videoThumbnail,
-           let jpegData = thumbnail.jpegData(compressionQuality: 0.7) {
-            do {
-                let path = "\(userId.uuidString)/\(sessionId.uuidString)/thumbnail.jpg"
-                try await SupabaseManager.shared.client?
-                    .storage
-                    .from("sessions")
-                    .upload(path, data: jpegData, options: .init(contentType: "image/jpeg", upsert: true))
-                thumbnailUrl = try SupabaseManager.shared.client?
-                    .storage
-                    .from("sessions")
-                    .getPublicURL(path: path)
-                    .absoluteString
-            } catch {
-                print("[TripSummary] Failed to upload thumbnail: \(error)")
-            }
-        }
-
         let hasVideo = videoLocalIdentifier != nil
 
+        // 1. Create session first (RLS requires row to exist before storage upload)
         let session = Session(
             id: sessionId,
             userId: userId,
@@ -415,8 +399,7 @@ struct TripSummaryView: View {
             distance: distanceKm,
             duration: durationSeconds,
             hasVideo: hasVideo,
-            thumbnailUrl: thumbnailUrl,
-            videoUrl: videoLocalIdentifier, // Store Photos local identifier
+            videoUrl: videoLocalIdentifier,
             locationName: locationName.isEmpty ? nil : locationName
         )
 
@@ -431,10 +414,38 @@ struct TripSummaryView: View {
         do {
             try await SessionService.shared.createSession(session)
             try await TelemetryService.shared.saveTelemetry(telemetry)
-            HapticManager.notification(.success)
         } catch {
             print("[TripSummary] Failed to save session: \(error)")
         }
+
+        // 2. Upload thumbnail after session exists (storage RLS checks session ownership)
+        if let thumbnail = videoThumbnail,
+           let jpegData = thumbnail.jpegData(compressionQuality: 0.7) {
+            do {
+                let path = "\(userId.uuidString.lowercased())/\(sessionId.uuidString.lowercased())/thumbnail.jpg"
+                try await SupabaseManager.shared.client?
+                    .storage
+                    .from("sessions")
+                    .upload(path, data: jpegData, options: .init(contentType: "image/jpeg", upsert: true))
+                let thumbnailUrl = try SupabaseManager.shared.client?
+                    .storage
+                    .from("sessions")
+                    .getPublicURL(path: path)
+                    .absoluteString
+                // Update session with thumbnail URL
+                if let thumbnailUrl {
+                    try await SupabaseManager.shared.client?
+                        .from("sessions")
+                        .update(["thumbnail_url": thumbnailUrl])
+                        .eq("id", value: sessionId.uuidString)
+                        .execute()
+                }
+            } catch {
+                print("[TripSummary] Failed to upload thumbnail: \(error)")
+            }
+        }
+
+        HapticManager.notification(.success)
 
         // Close everything — back to Record tab
         if let onClose {

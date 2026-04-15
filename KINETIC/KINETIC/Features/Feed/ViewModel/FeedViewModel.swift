@@ -55,20 +55,6 @@ final class FeedViewModel {
         }
     }
 
-    func toggleBookmark(for post: Post) async {
-        guard let index = posts.firstIndex(where: { $0.id == post.id }) else { return }
-        let isBookmarked = posts[index].isBookmarkedByMe ?? false
-        posts[index].isBookmarkedByMe = !isBookmarked
-        do {
-            if isBookmarked {
-                try await SocialService.shared.unbookmarkPost(postId: post.id)
-            } else {
-                try await SocialService.shared.bookmarkPost(postId: post.id)
-            }
-        } catch {
-            posts[index].isBookmarkedByMe = isBookmarked
-        }
-    }
 
     // MARK: - Preview
 

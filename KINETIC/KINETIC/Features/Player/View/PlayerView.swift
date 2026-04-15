@@ -6,6 +6,11 @@ struct PlayerView: View {
     let sessionId: UUID
     @State private var viewModel: PlayerViewModel
     @State private var avPlayer: AVPlayer?
+    @State private var showRouteMap = false
+    @State private var showSharePicker = false
+    @State private var showShareSheet = false
+    @State private var shareImage: UIImage?
+    @State private var mapSnapshot: UIImage?
     @Environment(\.dismiss) private var dismiss
 
     init(session: Session) {
@@ -32,7 +37,9 @@ struct PlayerView: View {
 
                 Spacer()
 
-                Button {} label: {
+                Button {
+                    showSharePicker = true
+                } label: {
                     Image(systemName: "square.and.arrow.up")
                         .font(.system(size: 18))
                         .foregroundStyle(.gravel)
@@ -82,6 +89,27 @@ struct PlayerView: View {
                             TelemetryCard(title: LanguageManager.shared.localizedString("player.sessionTime"), value: viewModel.formattedDuration, unit: "")
                         }
                         .padding(.top, 8)
+
+                        // View Route button (only for video sessions with telemetry)
+                        if viewModel.session?.hasVideo == true, !viewModel.snapshots.isEmpty {
+                            Button {
+                                showRouteMap = true
+                            } label: {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "map.fill")
+                                        .font(.system(size: 14, weight: .semibold))
+                                    Text(LanguageManager.shared.localizedString("player.route"))
+                                        .font(.inter(13, weight: .bold))
+                                        .tracking(0.5)
+                                }
+                                .foregroundStyle(.stravaOrange)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                                .background(Color.stravaOrange.opacity(0.1))
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                            }
+                            .padding(.top, 12)
+                        }
                     }
                     .padding(24)
                 }
@@ -124,31 +152,71 @@ struct PlayerView: View {
                     viewModel.observePlayer(player)
                 }
             }
+            // Generate map snapshot for sharing
+            let coords = viewModel.snapshots.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+            if coords.count >= 2 {
+                mapSnapshot = await MapSnapshotHelper.generateSnapshot(coordinates: coords)
+            }
         }
         .onDisappear {
             if let avPlayer {
                 viewModel.removeObserver(from: avPlayer)
             }
         }
-        .alert("Delete Session", isPresented: $viewModel.showDeleteAlert) {
-            Button("Cancel", role: .cancel) {}
-            Button("Delete", role: .destructive) {
+        .alert(LanguageManager.shared.localizedString("player.deleteTitle"), isPresented: $viewModel.showDeleteAlert) {
+            Button(LanguageManager.shared.localizedString("alert.cancel"), role: .cancel) {}
+            Button(LanguageManager.shared.localizedString("alert.delete"), role: .destructive) {
                 Task {
                     await viewModel.deleteSession()
                     dismiss()
                 }
             }
         } message: {
-            Text("Are you sure you want to delete this session? This action cannot be undone.")
+            Text(LanguageManager.shared.localizedString("player.deleteMessage"))
         }
-        .alert("Error", isPresented: Binding(
+        .alert(LanguageManager.shared.localizedString("alert.error"), isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
-            Button("OK", role: .cancel) {}
+            Button(LanguageManager.shared.localizedString("alert.ok"), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        .fullScreenCover(isPresented: $showRouteMap) {
+            RouteMapModal(snapshots: viewModel.snapshots, sessionName: viewModel.sessionName)
+        }
+        .sheet(isPresented: $showSharePicker) {
+            ShareTemplatePickerView(shareData: currentShareData) { template in
+                showSharePicker = false
+                shareImage = generateShareImage(data: currentShareData, template: template)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showShareSheet = true
+                }
+            }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
+        }
+        .sheet(isPresented: $showShareSheet) {
+            if let shareImage {
+                ShareSheet(items: [shareImage])
+            }
+        }
+    }
+
+    // MARK: - Share Data
+
+    private var currentShareData: ShareData {
+        let coords = viewModel.snapshots.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+        return ShareData(
+            tripName: viewModel.sessionName,
+            date: viewModel.sessionDateText.uppercased(),
+            maxSpeed: viewModel.speedValue,
+            avgSpeed: viewModel.dbTelemetry.map { String(format: "%.0f", $0.avgSpeed) } ?? "--",
+            distance: viewModel.distanceValue,
+            time: viewModel.formattedDuration,
+            mapSnapshot: mapSnapshot,
+            routePoints: MapSnapshotHelper.normalizeCoordinates(coords)
+        )
     }
 
     // MARK: - Video Player Section
@@ -194,8 +262,10 @@ struct PlayerView: View {
                             .tracking(1)
                             .foregroundStyle(.white.opacity(0.7))
                         Text(viewModel.hasDynamicData ? viewModel.liveTime : viewModel.formattedDuration)
-                            .font(.inter(22, weight: .black))
+                            .font(.inter(18, weight: .black))
                             .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
                             .contentTransition(.numericText())
                     }
                 }
@@ -222,7 +292,12 @@ struct PlayerView: View {
 
     private var routeMapSection: some View {
         ZStack(alignment: .bottomLeading) {
-            if !viewModel.snapshots.isEmpty {
+            if viewModel.isLoading {
+                Rectangle()
+                    .fill(Color(hex: 0x2A2A2E))
+                    .frame(height: 260)
+                    .overlay { SpinningView().scaleEffect(0.6) }
+            } else if !viewModel.snapshots.isEmpty {
                 let coords = viewModel.snapshots.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
                 Map(initialPosition: .region(regionFor(coords))) {
                     MapPolyline(coordinates: coords)
@@ -293,6 +368,84 @@ struct PlayerView: View {
             .foregroundStyle(color)
             .frame(maxWidth: .infinity)
         }
+    }
+}
+
+// MARK: - Route Map Modal
+
+struct RouteMapModal: View {
+    let snapshots: [TelemetrySnapshot]
+    let sessionName: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Header
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+
+                Spacer()
+
+                Text(LanguageManager.shared.localizedString("player.route"))
+                    .font(.inter(14, weight: .bold))
+                    .tracking(1)
+                    .foregroundStyle(.white)
+
+                Spacer()
+
+                // Balance spacer
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .bold))
+                    .opacity(0)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+            .background(.black)
+
+            // Map
+            if !snapshots.isEmpty {
+                let coords = snapshots.map { CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude) }
+                Map(initialPosition: .region(regionFor(coords))) {
+                    MapPolyline(coordinates: coords)
+                        .stroke(KineticMapStyle.routeColor, lineWidth: KineticMapStyle.routeLineWidth)
+                }
+                .mapStyle(KineticMapStyle.route)
+                .ignoresSafeArea(edges: .bottom)
+            } else {
+                Color(hex: 0x2A2A2E)
+                    .overlay {
+                        Image(systemName: "map")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.gravel.opacity(0.3))
+                    }
+                    .ignoresSafeArea(edges: .bottom)
+            }
+        }
+        .background(.black)
+    }
+
+    private func regionFor(_ coordinates: [CLLocationCoordinate2D]) -> MKCoordinateRegion {
+        let lats = coordinates.map(\.latitude)
+        let lons = coordinates.map(\.longitude)
+        guard let minLat = lats.min(), let maxLat = lats.max(),
+              let minLon = lons.min(), let maxLon = lons.max() else {
+            return MKCoordinateRegion()
+        }
+        let center = CLLocationCoordinate2D(
+            latitude: (minLat + maxLat) / 2,
+            longitude: (minLon + maxLon) / 2
+        )
+        let span = MKCoordinateSpan(
+            latitudeDelta: max((maxLat - minLat) * 1.5, 0.005),
+            longitudeDelta: max((maxLon - minLon) * 1.5, 0.005)
+        )
+        return MKCoordinateRegion(center: center, span: span)
     }
 }
 

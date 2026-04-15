@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HistoryView: View {
     @State private var viewModel: HistoryViewModel
+    @State private var selectedSession: Session?
     @Environment(MainTabCoordinator.self) private var tabCoordinator
 
     init(viewModel: HistoryViewModel = HistoryViewModel()) {
@@ -36,22 +37,17 @@ struct HistoryView: View {
                 Image("logoNavBar")
             }
         }
-        .navigationDestination(for: HistoryRoute.self) { route in
-            switch route {
-            case .player(let session):
-                PlayerView(session: session)
-            case .share(let sessionId):
-                ShareActivityView(sessionId: sessionId)
-            }
+        .fullScreenCover(item: $selectedSession) { session in
+            PlayerView(session: session)
         }
         .task {
             await viewModel.loadSessions()
         }
-        .alert("Error", isPresented: Binding(
+        .alert(LanguageManager.shared.localizedString("alert.error"), isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
-            Button("OK", role: .cancel) {}
+            Button(LanguageManager.shared.localizedString("alert.ok"), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
@@ -88,7 +84,9 @@ struct HistoryView: View {
                 // Sessions list
                 LazyVStack(spacing: 12) {
                     ForEach(viewModel.filteredSessions) { session in
-                        NavigationLink(value: HistoryRoute.player(session: session)) {
+                        Button {
+                            selectedSession = session
+                        } label: {
                             SessionRow(session: session)
                                 .contentShape(Rectangle())
                         }

@@ -5,19 +5,36 @@ struct FeedView: View {
     @Environment(MainTabCoordinator.self) private var tabCoordinator
 
     var body: some View {
-        Group {
-            if viewModel.isLoading && viewModel.posts.isEmpty {
-                VStack {
-                    Spacer()
-                    SpinningView()
-                    Spacer()
+        ZStack(alignment: .bottomTrailing) {
+            Group {
+                if viewModel.isLoading && viewModel.posts.isEmpty {
+                    VStack {
+                        Spacer()
+                        SpinningView()
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                } else if viewModel.posts.isEmpty {
+                    emptyState
+                } else {
+                    feedContent
                 }
-                .frame(maxWidth: .infinity)
-            } else if viewModel.posts.isEmpty {
-                emptyState
-            } else {
-                feedContent
             }
+
+            // FAB — New post
+            Button {
+                tabCoordinator.feedPath.append(.newPost)
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 56, height: 56)
+                    .background(.stravaOrange)
+                    .clipShape(Circle())
+                    .shadow(color: .stravaOrange.opacity(0.4), radius: 10, y: 4)
+            }
+            .padding(.trailing, 20)
+            .padding(.bottom, 20)
         }
         .background(Color.fog)
         .refreshable {
@@ -37,9 +54,7 @@ struct FeedView: View {
                     PostCardView(
                         post: post,
                         onLike: { Task { await viewModel.toggleLike(for: post) } },
-                        onComment: { tabCoordinator.feedPath.append(.postDetail(post)) },
-                        onShare: {},
-                        onBookmark: { Task { await viewModel.toggleBookmark(for: post) } }
+                        onComment: { tabCoordinator.feedPath.append(.postDetail(post)) }
                     )
                     .onTapGesture {
                         tabCoordinator.feedPath.append(.postDetail(post))

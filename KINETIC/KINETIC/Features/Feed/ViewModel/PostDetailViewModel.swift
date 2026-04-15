@@ -52,17 +52,4 @@ final class PostDetailViewModel {
         }
     }
 
-    func toggleBookmark() async {
-        let isBookmarked = post.isBookmarkedByMe ?? false
-        post.isBookmarkedByMe = !isBookmarked
-        do {
-            if isBookmarked {
-                try await SocialService.shared.unbookmarkPost(postId: post.id)
-            } else {
-                try await SocialService.shared.bookmarkPost(postId: post.id)
-            }
-        } catch {
-            post.isBookmarkedByMe = isBookmarked
-        }
-    }
 }

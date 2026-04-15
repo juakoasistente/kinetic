@@ -108,7 +108,7 @@ final class PlayerViewModel {
         let h = total / 3600
         let m = (total % 3600) / 60
         let s = total % 60
-        return String(format: "%02d : %02d : %02d", h, m, s)
+        return String(format: "%02d:%02d:%02d", h, m, s)
     }
 
     var hasDynamicData: Bool { !snapshots.isEmpty }
@@ -132,12 +132,12 @@ final class PlayerViewModel {
     }
 
     var formattedDuration: String {
-        guard let session else { return "-- : -- : --" }
+        guard let session else { return "--:--:--" }
         let total = Int(session.duration)
         let h = total / 3600
         let m = (total % 3600) / 60
         let s = total % 60
-        return String(format: "%02d : %02d : %02d", h, m, s)
+        return String(format: "%02d:%02d:%02d", h, m, s)
     }
 
     var distanceValue: String {

@@ -16,7 +16,8 @@ struct OverlayCompositor {
     /// Compose telemetry overlay onto a recorded video
     static func composeOverlay(
         videoURL: URL,
-        telemetrySnapshots: [TelemetrySnapshot]
+        telemetrySnapshots: [TelemetrySnapshot],
+        template: OverlayTemplate = .classic
     ) async -> URL? {
         let asset = AVURLAsset(url: videoURL)
 
@@ -72,7 +73,8 @@ struct OverlayCompositor {
             to: overlayLayer,
             size: videoSize,
             duration: duration.seconds,
-            snapshots: telemetrySnapshots
+            snapshots: telemetrySnapshots,
+            template: template
         )
 
         // Video composition
@@ -88,6 +90,7 @@ struct OverlayCompositor {
         instruction.timeRange = timeRange
 
         let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionVideoTrack)
+        layerInstruction.setTransform(transform, at: .zero)
         instruction.layerInstructions = [layerInstruction]
         videoComposition.instructions = [instruction]
 
@@ -116,142 +119,213 @@ struct OverlayCompositor {
         to parentLayer: CALayer,
         size: CGSize,
         duration: Double,
-        snapshots: [TelemetrySnapshot]
+        snapshots: [TelemetrySnapshot],
+        template: OverlayTemplate
     ) {
         guard let lastSnapshot = snapshots.last else { return }
+        let stravaOrange = UIColor(red: 0.988, green: 0.322, blue: 0, alpha: 1)
 
-        // Background bar at bottom
-        let barHeight: CGFloat = size.height * 0.15
-        let barLayer = CALayer()
-        barLayer.frame = CGRect(x: 0, y: 0, width: size.width, height: barHeight)
-        barLayer.backgroundColor = UIColor.black.withAlphaComponent(0.6).cgColor
-        parentLayer.addSublayer(barLayer)
-
-        let padding: CGFloat = size.width * 0.04
-        let statWidth = (size.width - padding * 5) / 4
-
-        // Speed (animated via keyframes)
-        let speedLabel = makeLabel(
-            text: "SPEED",
-            fontSize: size.width * 0.025,
-            color: .white.withAlphaComponent(0.6),
-            frame: CGRect(x: padding, y: barHeight * 0.55, width: statWidth, height: barHeight * 0.3)
-        )
-        barLayer.addSublayer(speedLabel)
-
-        let speedValue = makeLabel(
-            text: "\(Int(lastSnapshot.speed)) KM/H",
-            fontSize: size.width * 0.045,
-            color: .white,
-            frame: CGRect(x: padding, y: barHeight * 0.15, width: statWidth, height: barHeight * 0.4),
-            bold: true
-        )
-        barLayer.addSublayer(speedValue)
-
-        // Animate speed text
-        if snapshots.count > 1 {
-            let animation = CAKeyframeAnimation(keyPath: "string")
-            animation.beginTime = AVCoreAnimationBeginTimeAtZero
-            animation.duration = duration
-            animation.isRemovedOnCompletion = false
-            animation.fillMode = .forwards
-            animation.calculationMode = .discrete
-
-            var keyTimes: [NSNumber] = []
-            var values: [String] = []
-            for snap in snapshots {
-                keyTimes.append(NSNumber(value: snap.timestamp / duration))
-                values.append("\(Int(snap.speed)) KM/H")
-            }
-            animation.keyTimes = keyTimes
-            animation.values = values
-
-            (speedValue as? CATextLayer)?.add(animation, forKey: "speedAnim")
+        switch template {
+        case .classic:
+            addClassicOverlay(to: parentLayer, size: size, duration: duration, snapshots: snapshots, lastSnapshot: lastSnapshot, accent: stravaOrange)
+        case .minimal:
+            addMinimalOverlay(to: parentLayer, size: size, duration: duration, snapshots: snapshots, lastSnapshot: lastSnapshot, accent: stravaOrange)
+        case .dashboard:
+            addDashboardOverlay(to: parentLayer, size: size, duration: duration, snapshots: snapshots, lastSnapshot: lastSnapshot, accent: stravaOrange)
         }
 
-        // Max Speed (static)
-        let maxLabel = makeLabel(
-            text: "MAX",
-            fontSize: size.width * 0.025,
-            color: .white.withAlphaComponent(0.6),
-            frame: CGRect(x: padding * 2 + statWidth, y: barHeight * 0.55, width: statWidth, height: barHeight * 0.3)
-        )
-        barLayer.addSublayer(maxLabel)
-
-        let maxValue = makeLabel(
-            text: "\(Int(lastSnapshot.maxSpeed)) KM/H",
-            fontSize: size.width * 0.045,
-            color: .white,
-            frame: CGRect(x: padding * 2 + statWidth, y: barHeight * 0.15, width: statWidth, height: barHeight * 0.4),
-            bold: true
-        )
-        barLayer.addSublayer(maxValue)
-
-        // Distance (animated)
-        let distLabel = makeLabel(
-            text: "DIST",
-            fontSize: size.width * 0.025,
-            color: .white.withAlphaComponent(0.6),
-            frame: CGRect(x: padding * 3 + statWidth * 2, y: barHeight * 0.55, width: statWidth, height: barHeight * 0.3)
-        )
-        barLayer.addSublayer(distLabel)
-
-        let distValue = makeLabel(
-            text: String(format: "%.1f KM", lastSnapshot.distance),
-            fontSize: size.width * 0.045,
-            color: .white,
-            frame: CGRect(x: padding * 3 + statWidth * 2, y: barHeight * 0.15, width: statWidth, height: barHeight * 0.4),
-            bold: true
-        )
-        barLayer.addSublayer(distValue)
-
-        // Time (animated)
-        let timeLabel = makeLabel(
-            text: "TIME",
-            fontSize: size.width * 0.025,
-            color: .white.withAlphaComponent(0.6),
-            frame: CGRect(x: padding * 4 + statWidth * 3, y: barHeight * 0.55, width: statWidth, height: barHeight * 0.3)
-        )
-        barLayer.addSublayer(timeLabel)
-
-        let timeValue = makeLabel(
-            text: formatTime(lastSnapshot.elapsed),
-            fontSize: size.width * 0.045,
-            color: .white,
-            frame: CGRect(x: padding * 4 + statWidth * 3, y: barHeight * 0.15, width: statWidth, height: barHeight * 0.4),
-            bold: true
-        )
-        barLayer.addSublayer(timeValue)
-
         // KINETIC watermark — large, semi-transparent, centered
-        // Only visible in exported video, NOT in live preview
         let watermarkFontSize = size.width * 0.12
-        let watermarkText = "KINETIC"
         let watermarkLayer = CATextLayer()
-        watermarkLayer.string = watermarkText
+        watermarkLayer.string = "KINETIC"
         watermarkLayer.font = UIFont.systemFont(ofSize: watermarkFontSize, weight: .black)
         watermarkLayer.fontSize = watermarkFontSize
         watermarkLayer.foregroundColor = UIColor.white.withAlphaComponent(0.08).cgColor
         watermarkLayer.alignmentMode = .center
         watermarkLayer.contentsScale = UIScreen.main.scale
-        watermarkLayer.frame = CGRect(
-            x: 0,
-            y: (size.height - watermarkFontSize) / 2,
-            width: size.width,
-            height: watermarkFontSize * 1.3
-        )
+        watermarkLayer.frame = CGRect(x: 0, y: (size.height - watermarkFontSize) / 2, width: size.width, height: watermarkFontSize * 1.3)
         parentLayer.addSublayer(watermarkLayer)
 
-        // Small KINETIC branding — top right corner
+        // Small KINETIC branding — top right
+        let padding: CGFloat = size.width * 0.04
         let brandLayer = makeLabel(
-            text: "KINETIC",
-            fontSize: size.width * 0.025,
-            color: UIColor(red: 0.988, green: 0.322, blue: 0, alpha: 0.6),
+            text: "KINETIC", fontSize: size.width * 0.025,
+            color: stravaOrange.withAlphaComponent(0.6),
             frame: CGRect(x: size.width - size.width * 0.18 - padding, y: size.height - padding - size.width * 0.035, width: size.width * 0.18, height: size.width * 0.035),
-            bold: true,
-            alignment: .right
+            bold: true, alignment: .right
         )
         parentLayer.addSublayer(brandLayer)
+    }
+
+    // MARK: - Classic: big speed centered, stats row, gradient bottom
+
+    private static func addClassicOverlay(to parentLayer: CALayer, size: CGSize, duration: Double, snapshots: [TelemetrySnapshot], lastSnapshot: TelemetrySnapshot, accent: UIColor) {
+        let padding: CGFloat = size.width * 0.04
+
+        // Gradient at bottom
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.frame = CGRect(x: 0, y: 0, width: size.width, height: size.height * 0.4)
+        gradientLayer.colors = [UIColor.clear.cgColor, UIColor.black.withAlphaComponent(0.7).cgColor]
+        gradientLayer.startPoint = CGPoint(x: 0.5, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 0.5, y: 1)
+        parentLayer.addSublayer(gradientLayer)
+
+        // Big speed — center bottom
+        let speedFontSize = size.width * 0.1
+        let speedValue = makeLabel(
+            text: "\(Int(lastSnapshot.speed))", fontSize: speedFontSize, color: .white,
+            frame: CGRect(x: 0, y: size.height * 0.14, width: size.width, height: speedFontSize * 1.2),
+            bold: true, alignment: .center
+        )
+        parentLayer.addSublayer(speedValue)
+        addSpeedAnimation(to: speedValue, snapshots: snapshots, duration: duration, format: "%d")
+
+        let unitLayer = makeLabel(
+            text: "KM/H", fontSize: size.width * 0.03, color: accent,
+            frame: CGRect(x: 0, y: size.height * 0.1, width: size.width, height: size.width * 0.04),
+            bold: true, alignment: .center
+        )
+        parentLayer.addSublayer(unitLayer)
+
+        // Stats row
+        let barY: CGFloat = size.height * 0.03
+        let statWidth = (size.width - padding * 4) / 3
+        let stats: [(String, String)] = [
+            ("MAX", "\(Int(lastSnapshot.maxSpeed)) KM/H"),
+            ("DIST", String(format: "%.1f KM", lastSnapshot.distance)),
+            ("TIME", formatTime(lastSnapshot.elapsed))
+        ]
+        for (i, stat) in stats.enumerated() {
+            let x = padding + CGFloat(i) * (statWidth + padding)
+            let label = makeLabel(text: stat.0, fontSize: size.width * 0.022, color: .white.withAlphaComponent(0.6), frame: CGRect(x: x, y: barY + size.width * 0.04, width: statWidth, height: size.width * 0.03))
+            let value = makeLabel(text: stat.1, fontSize: size.width * 0.04, color: .white, frame: CGRect(x: x, y: barY, width: statWidth, height: size.width * 0.045), bold: true)
+            parentLayer.addSublayer(label)
+            parentLayer.addSublayer(value)
+        }
+
+        // Time top-right
+        let timeBg = CALayer()
+        let timeW = size.width * 0.2
+        timeBg.frame = CGRect(x: size.width - timeW - padding, y: size.height - padding - size.width * 0.06, width: timeW, height: size.width * 0.05)
+        timeBg.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        timeBg.cornerRadius = size.width * 0.025
+        parentLayer.addSublayer(timeBg)
+        let timeLabel = makeLabel(
+            text: formatTime(lastSnapshot.elapsed), fontSize: size.width * 0.025, color: .white,
+            frame: timeBg.frame, bold: true, alignment: .center
+        )
+        parentLayer.addSublayer(timeLabel)
+        addTimeAnimation(to: timeLabel, snapshots: snapshots, duration: duration)
+    }
+
+    // MARK: - Minimal: speed bottom-left, time top-right
+
+    private static func addMinimalOverlay(to parentLayer: CALayer, size: CGSize, duration: Double, snapshots: [TelemetrySnapshot], lastSnapshot: TelemetrySnapshot, accent: UIColor) {
+        let padding: CGFloat = size.width * 0.05
+
+        // Speed — bottom left, big
+        let speedFontSize = size.width * 0.09
+        let speedValue = makeLabel(
+            text: "\(Int(lastSnapshot.speed))", fontSize: speedFontSize, color: .white,
+            frame: CGRect(x: padding, y: padding + size.width * 0.025, width: size.width * 0.4, height: speedFontSize * 1.2),
+            bold: true
+        )
+        parentLayer.addSublayer(speedValue)
+        addSpeedAnimation(to: speedValue, snapshots: snapshots, duration: duration, format: "%d")
+
+        let unitLayer = makeLabel(
+            text: "KM/H", fontSize: size.width * 0.025, color: accent,
+            frame: CGRect(x: padding, y: padding, width: size.width * 0.2, height: size.width * 0.03),
+            bold: true
+        )
+        parentLayer.addSublayer(unitLayer)
+
+        // Time — top right
+        let timeBg = CALayer()
+        let timeW = size.width * 0.22
+        timeBg.frame = CGRect(x: size.width - timeW - padding, y: size.height - padding - size.width * 0.06, width: timeW, height: size.width * 0.05)
+        timeBg.backgroundColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        timeBg.cornerRadius = size.width * 0.025
+        parentLayer.addSublayer(timeBg)
+        let timeLabel = makeLabel(
+            text: formatTime(lastSnapshot.elapsed), fontSize: size.width * 0.025, color: .white,
+            frame: timeBg.frame, bold: true, alignment: .center
+        )
+        parentLayer.addSublayer(timeLabel)
+        addTimeAnimation(to: timeLabel, snapshots: snapshots, duration: duration)
+    }
+
+    // MARK: - Dashboard: speed big centered orange, stats bar bottom
+
+    private static func addDashboardOverlay(to parentLayer: CALayer, size: CGSize, duration: Double, snapshots: [TelemetrySnapshot], lastSnapshot: TelemetrySnapshot, accent: UIColor) {
+        let padding: CGFloat = size.width * 0.04
+
+        // Speed — big, center, orange
+        let speedFontSize = size.width * 0.12
+        let speedValue = makeLabel(
+            text: "\(Int(lastSnapshot.speed))", fontSize: speedFontSize, color: accent,
+            frame: CGRect(x: 0, y: (size.height - speedFontSize) / 2, width: size.width, height: speedFontSize * 1.2),
+            bold: true, alignment: .center
+        )
+        parentLayer.addSublayer(speedValue)
+        addSpeedAnimation(to: speedValue, snapshots: snapshots, duration: duration, format: "%d")
+
+        let unitLayer = makeLabel(
+            text: "KM/H", fontSize: size.width * 0.025, color: .white.withAlphaComponent(0.5),
+            frame: CGRect(x: 0, y: (size.height - speedFontSize) / 2 - size.width * 0.035, width: size.width, height: size.width * 0.03),
+            bold: true, alignment: .center
+        )
+        parentLayer.addSublayer(unitLayer)
+
+        // Stats bar at bottom
+        let barHeight: CGFloat = size.height * 0.1
+        let barLayer = CALayer()
+        barLayer.frame = CGRect(x: 0, y: 0, width: size.width, height: barHeight)
+        barLayer.backgroundColor = UIColor.black.withAlphaComponent(0.6).cgColor
+        parentLayer.addSublayer(barLayer)
+
+        let statWidth = (size.width - padding * 5) / 4
+        let stats: [(String, String)] = [
+            ("MAX", "\(Int(lastSnapshot.maxSpeed))"),
+            ("AVG", "\(Int(lastSnapshot.avgSpeed))"),
+            ("DIST", String(format: "%.1f", lastSnapshot.distance)),
+            ("TIME", formatTime(lastSnapshot.elapsed))
+        ]
+        for (i, stat) in stats.enumerated() {
+            let x = padding + CGFloat(i) * (statWidth + padding)
+            let label = makeLabel(text: stat.0, fontSize: size.width * 0.02, color: accent.withAlphaComponent(0.7), frame: CGRect(x: x, y: barHeight * 0.55, width: statWidth, height: barHeight * 0.3))
+            let value = makeLabel(text: stat.1, fontSize: size.width * 0.035, color: .white, frame: CGRect(x: x, y: barHeight * 0.15, width: statWidth, height: barHeight * 0.4), bold: true)
+            barLayer.addSublayer(label)
+            barLayer.addSublayer(value)
+        }
+    }
+
+    // MARK: - Animation Helpers
+
+    private static func addSpeedAnimation(to layer: CALayer, snapshots: [TelemetrySnapshot], duration: Double, format: String) {
+        guard snapshots.count > 1 else { return }
+        let animation = CAKeyframeAnimation(keyPath: "string")
+        animation.beginTime = AVCoreAnimationBeginTimeAtZero
+        animation.duration = duration
+        animation.isRemovedOnCompletion = false
+        animation.fillMode = .forwards
+        animation.calculationMode = .discrete
+        animation.keyTimes = snapshots.map { NSNumber(value: $0.timestamp / duration) }
+        animation.values = snapshots.map { String(format: format, Int($0.speed)) }
+        (layer as? CATextLayer)?.add(animation, forKey: "speedAnim")
+    }
+
+    private static func addTimeAnimation(to layer: CALayer, snapshots: [TelemetrySnapshot], duration: Double) {
+        guard snapshots.count > 1 else { return }
+        let animation = CAKeyframeAnimation(keyPath: "string")
+        animation.beginTime = AVCoreAnimationBeginTimeAtZero
+        animation.duration = duration
+        animation.isRemovedOnCompletion = false
+        animation.fillMode = .forwards
+        animation.calculationMode = .discrete
+        animation.keyTimes = snapshots.map { NSNumber(value: $0.timestamp / duration) }
+        animation.values = snapshots.map { formatTime($0.elapsed) }
+        (layer as? CATextLayer)?.add(animation, forKey: "timeAnim")
     }
 
     private static func makeLabel(

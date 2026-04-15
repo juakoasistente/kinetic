@@ -134,11 +134,11 @@ struct SettingsView: View {
         } message: {
             Text(localized: "settings.logoutMessage")
         }
-        .alert("Error", isPresented: Binding(
+        .alert(LanguageManager.shared.localizedString("alert.error"), isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
-            Button("OK", role: .cancel) {}
+            Button(LanguageManager.shared.localizedString("alert.ok"), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
         }

@@ -1,25 +1,23 @@
 import SwiftUI
+import AVKit
 
 struct PostCardView: View {
     let post: Post
     var onLike: () -> Void = {}
     var onComment: () -> Void = {}
-    var onShare: () -> Void = {}
-    var onBookmark: () -> Void = {}
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // MARK: - Author Header
             authorHeader
 
-            // MARK: - Session Stats
-            if let session = post.session {
-                sessionStatsCard(session)
-            }
-
             // MARK: - Media
             if let media = post.media, let firstMedia = media.first {
-                mediaSection(firstMedia)
+                if firstMedia.mediaType == .video {
+                    VideoMediaView(media: firstMedia)
+                } else {
+                    imageSection(firstMedia)
+                }
             }
 
             // MARK: - Description
@@ -68,12 +66,6 @@ struct PostCardView: View {
             }
 
             Spacer()
-
-            Button(action: {}) {
-                Image(systemName: "ellipsis")
-                    .foregroundStyle(Color.gravel)
-                    .frame(width: 32, height: 32)
-            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -90,54 +82,9 @@ struct PostCardView: View {
             }
     }
 
-    // MARK: - Session Stats
+    // MARK: - Image Media
 
-    private func sessionStatsCard(_ session: Session) -> some View {
-        HStack(spacing: 0) {
-            statItem(
-                value: String(format: "%.0f", session.distance > 0 ? session.distance : 142),
-                unit: "KM/H",
-                label: LanguageManager.shared.localizedString("feed.maxSpeed")
-            )
-            Spacer()
-            statItem(
-                value: String(format: "%.1f", session.distance),
-                unit: "KM",
-                label: LanguageManager.shared.localizedString("feed.distance")
-            )
-            Spacer()
-            statItem(
-                value: session.formattedDuration,
-                unit: "MIN",
-                label: LanguageManager.shared.localizedString("feed.duration")
-            )
-        }
-        .padding(16)
-        .background(Color.coal)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .padding(.horizontal, 16)
-    }
-
-    private func statItem(value: String, unit: String, label: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text(value)
-                    .font(.inter(24, weight: .bold))
-                    .foregroundStyle(Color.white)
-                Text(unit)
-                    .font(.inter(10, weight: .medium))
-                    .foregroundStyle(Color.gravel)
-            }
-            Text(label)
-                .font(.inter(10, weight: .medium))
-                .foregroundStyle(Color.gravel)
-                .textCase(.uppercase)
-        }
-    }
-
-    // MARK: - Media
-
-    private func mediaSection(_ media: PostMedia) -> some View {
+    private func imageSection(_ media: PostMedia) -> some View {
         AsyncImage(url: URL(string: media.mediaUrl)) { image in
             image
                 .resizable()
@@ -187,23 +134,72 @@ struct PostCardView: View {
                     }
                 }
             }
-
-            // Share
-            Button(action: onShare) {
-                Image(systemName: "square.and.arrow.up")
-                    .foregroundStyle(Color.gravel)
-            }
-
-            Spacer()
-
-            // Bookmark
-            Button(action: onBookmark) {
-                Image(systemName: (post.isBookmarkedByMe ?? false) ? "bookmark.fill" : "bookmark")
-                    .foregroundStyle((post.isBookmarkedByMe ?? false) ? Color.stravaOrange : Color.gravel)
-            }
         }
         .font(.system(size: 20))
         .padding(.horizontal, 16)
+    }
+}
+
+// MARK: - Video Media View
+
+private struct VideoMediaView: View {
+    let media: PostMedia
+    @State private var isPlaying = false
+    @State private var player: AVPlayer?
+
+    var body: some View {
+        ZStack {
+            if isPlaying, let player {
+                VideoPlayer(player: player)
+                    .frame(height: 280)
+                    .onDisappear {
+                        player.pause()
+                    }
+            } else {
+                // Thumbnail / placeholder with play button
+                ZStack {
+                    AsyncImage(url: URL(string: media.mediaUrl)) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 220)
+                                .clipped()
+                        default:
+                            Rectangle()
+                                .fill(Color.coal)
+                                .frame(height: 220)
+                                .overlay {
+                                    Image(systemName: "video.fill")
+                                        .font(.system(size: 32))
+                                        .foregroundStyle(Color.gravel)
+                                }
+                        }
+                    }
+
+                    // Play button overlay
+                    Circle()
+                        .fill(.black.opacity(0.5))
+                        .frame(width: 56, height: 56)
+                        .overlay {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 22))
+                                .foregroundStyle(.white)
+                                .offset(x: 2)
+                        }
+                }
+                .onTapGesture {
+                    if let url = URL(string: media.mediaUrl) {
+                        player = AVPlayer(url: url)
+                        isPlaying = true
+                        player?.play()
+                    }
+                }
+            }
+        }
+        .padding(.top, 8)
     }
 }
 

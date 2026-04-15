@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="KINETIC Test">
+    <trk>
+        <name>Barcelona Test Route</name>
+        <trkseg>
+            <trkpt lat="41.3851" lon="2.1734"><ele>15</ele></trkpt>
+            <trkpt lat="41.3860" lon="2.1745"><ele>18</ele></trkpt>
+            <trkpt lat="41.3872" lon="2.1760"><ele>22</ele></trkpt>
+            <trkpt lat="41.3885" lon="2.1778"><ele>25</ele></trkpt>
+            <trkpt lat="41.3900" lon="2.1790"><ele>30</ele></trkpt>
+            <trkpt lat="41.3912" lon="2.1775"><ele>28</ele></trkpt>
+            <trkpt lat="41.3920" lon="2.1755"><ele>24</ele></trkpt>
+            <trkpt lat="41.3928" lon="2.1740"><ele>20</ele></trkpt>
+            <trkpt lat="41.3935" lon="2.1720"><ele>18</ele></trkpt>
+            <trkpt lat="41.3940" lon="2.1700"><ele>15</ele></trkpt>
+        </trkseg>
+    </trk>
+</gpx>

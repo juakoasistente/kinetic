@@ -89,11 +89,11 @@ struct AuthView: View {
             }
             .padding(24)
         }
-        .alert("Error", isPresented: .init(
+        .alert(LanguageManager.shared.localizedString("alert.error"), isPresented: .init(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
-            Button("OK") { viewModel.errorMessage = nil }
+            Button(LanguageManager.shared.localizedString("alert.ok")) { viewModel.errorMessage = nil }
         } message: {
             Text(viewModel.errorMessage ?? "")
         }

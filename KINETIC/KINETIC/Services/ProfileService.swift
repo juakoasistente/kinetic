@@ -28,7 +28,7 @@ struct ProfileService {
 
     func uploadAvatar(userId: UUID, imageData: Data) async throws -> String {
         guard let client else { throw ServiceError.notConfigured }
-        let path = "\(userId.uuidString)/avatar.jpg"
+        let path = "\(userId.uuidString.lowercased())/avatar.jpg"
 
         try await client.storage
             .from("avatars")

@@ -39,6 +39,8 @@
 "player.speed" = "VELOCIDAD";
 "player.gForce" = "FUERZA G";
 "player.sessionTime" = "TIEMPO DE SESIÓN";
+"player.video" = "VIDEO";
+"player.route" = "ROUTE";
 
 /* Record */
 "record.selectMode" = "SELECT MODE";
@@ -230,6 +232,14 @@
 
 /* Trip */
 "trip.namePlaceholder" = "Trip name (e.g.: Mountain route)";
+
+/* Alerts */
+"alert.error" = "Error";
+"alert.ok" = "OK";
+"alert.cancel" = "Cancel";
+"alert.delete" = "Delete";
+"player.deleteTitle" = "Delete Session";
+"player.deleteMessage" = "Are you sure you want to delete this session? This action cannot be undone.";
 
 /* Overlay Settings */
 "settings.overlay.speed" = "Speed";

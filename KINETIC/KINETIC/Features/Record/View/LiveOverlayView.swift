@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 import Combine
 import CoreLocation
 
@@ -148,12 +149,14 @@ struct TelemetryOverlayView: View {
 // MARK: - Processing Overlay
 
 struct ProcessingOverlayView: View {
+    var text: String = LanguageManager.shared.localizedString("overlay.processingOverlay")
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.85).ignoresSafeArea()
             VStack(spacing: 24) {
                 SpinningView()
-                Text(LanguageManager.shared.localizedString("overlay.processingOverlay"))
+                Text(text)
                     .font(.inter(14, weight: .semibold))
                     .foregroundStyle(.white)
             }
@@ -297,7 +300,7 @@ struct LiveOverlayView: View {
     @State private var timerStartDate: Date?
 
     var body: some View {
-        Group {
+        ZStack {
             switch overlayState {
             case .pickingOrientation:
                 OrientationPickerView(selected: $orientation, onConfirm: {
@@ -313,20 +316,12 @@ struct LiveOverlayView: View {
                     onBack: { withAnimation { overlayState = .pickingOrientation } }
                 )
 
-            case .preparingCamera:
-                // Full screen spinner while camera initializes
-                ZStack {
-                    Color.black.ignoresSafeArea()
-                    VStack(spacing: 24) {
-                        SpinningView()
-                        Text(LanguageManager.shared.localizedString("overlay.preparingCamera"))
-                            .font(.inter(14, weight: .semibold))
-                            .foregroundStyle(.white)
-                    }
-                }
-
-            case .readyToRecord, .recording:
+            case .preparingCamera, .readyToRecord, .recording:
                 cameraView
+            }
+
+            if overlayState == .preparingCamera {
+                ProcessingOverlayView(text: LanguageManager.shared.localizedString("overlay.preparingCamera"))
             }
         }
         .onReceive(timer) { _ in
@@ -456,15 +451,17 @@ struct LiveOverlayView: View {
         overlayState = .preparingCamera
         locationManager.requestPermission()
 
-        // Run camera setup after a frame so the spinner renders first
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            cameraManager.configure(landscape: orientation == .landscape)
+        Task {
+            await cameraManager.configureAsync(landscape: orientation == .landscape)
             cameraManager.start()
 
-            // Wait for session to actually start
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                withAnimation { overlayState = .readyToRecord }
+            // Wait until capture session is actually running (max ~5s)
+            for _ in 0..<50 {
+                try? await Task.sleep(for: .milliseconds(100))
+                if cameraManager.captureSession.isRunning { break }
             }
+
+            withAnimation { overlayState = .readyToRecord }
         }
     }
 
@@ -485,34 +482,39 @@ struct LiveOverlayView: View {
         OrientationLock.shared.unlock()
 
         trackingSummary = locationManager.stopTracking()
-        cameraManager.stopRecording()
-        cameraManager.stop()
-
-        guard let videoURL = cameraManager.recordedVideoURL, let summary = trackingSummary else {
-            showSummary = true
-            return
-        }
-
         isProcessingVideo = true
 
         Task {
-            // 1. Compose overlay onto video
+            // 1. Wait for recording file to finish writing
+            let videoURL = await cameraManager.stopRecordingAsync()
+            cameraManager.stop()
+
+            guard let videoURL, let summary = trackingSummary else {
+                isProcessingVideo = false
+                showSummary = true
+                return
+            }
+
+            // 2. Compose overlay onto video
             let telemetrySnapshots = generateTelemetrySnapshots(summary: summary)
             let finalURL: URL
             if let outputURL = await OverlayCompositor.composeOverlay(
                 videoURL: videoURL,
-                telemetrySnapshots: telemetrySnapshots
+                telemetrySnapshots: telemetrySnapshots,
+                template: overlayTemplate
             ) {
+                print("[LiveOverlay] Overlay composed successfully: \(outputURL.lastPathComponent)")
                 finalURL = outputURL
                 processedVideoURL = outputURL
             } else {
+                print("[LiveOverlay] WARNING: Overlay composition failed, using original video")
                 finalURL = videoURL
             }
 
-            // 2. Save to Photos
+            // 3. Save to Photos
             videoLocalIdentifier = await VideoSaveHelper.saveToPhotos(videoURL: finalURL)
 
-            // 3. Generate thumbnail
+            // 4. Generate thumbnail
             videoThumbnail = await VideoSaveHelper.generateThumbnail(videoURL: finalURL)
 
             isProcessingVideo = false

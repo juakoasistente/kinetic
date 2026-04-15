@@ -34,8 +34,6 @@ enum RecordRoute: Hashable {
 }
 
 enum HistoryRoute: Hashable {
-    case player(session: Session)
-    case share(sessionId: UUID)
 }
 
 enum SettingsRoute: Hashable {

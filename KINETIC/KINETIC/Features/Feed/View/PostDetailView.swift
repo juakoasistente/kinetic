@@ -16,9 +16,7 @@ struct PostDetailView: View {
                 PostCardView(
                     post: viewModel.post,
                     onLike: { Task { await viewModel.toggleLike() } },
-                    onComment: { viewModel.isCommentFieldFocused = true },
-                    onShare: {},
-                    onBookmark: { Task { await viewModel.toggleBookmark() } }
+                    onComment: { viewModel.isCommentFieldFocused = true }
                 )
 
                 // Comments Section

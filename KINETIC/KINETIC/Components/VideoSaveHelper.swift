@@ -6,7 +6,7 @@ struct VideoSaveHelper {
 
     /// Save video to Photos library and return the local identifier
     static func saveToPhotos(videoURL: URL) async -> String? {
-        let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+        let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
         guard status == .authorized || status == .limited else {
             debugPrint("[VideoSave] Photo library access denied")
             return nil
@@ -47,8 +47,17 @@ struct VideoSaveHelper {
 
     /// Fetch video URL from Photos by local identifier (for playback)
     static func fetchVideoURL(localIdentifier: String) async -> URL? {
+        let status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+        guard status == .authorized || status == .limited else {
+            debugPrint("[VideoSave] Photo library read access denied")
+            return nil
+        }
+
         let results = PHAsset.fetchAssets(withLocalIdentifiers: [localIdentifier], options: nil)
-        guard let asset = results.firstObject else { return nil }
+        guard let asset = results.firstObject else {
+            debugPrint("[VideoSave] Asset not found for identifier: \(localIdentifier)")
+            return nil
+        }
 
         return await withCheckedContinuation { continuation in
             let options = PHVideoRequestOptions()

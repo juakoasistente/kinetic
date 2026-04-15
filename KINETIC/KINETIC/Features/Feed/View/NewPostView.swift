@@ -6,42 +6,60 @@ struct NewPostView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                // MARK: - Select Activity
-                activitySelector
-
-                // MARK: - Selected Session Preview
-                if let session = viewModel.selectedSession {
-                    sessionPreview(session)
-                }
-
-                // MARK: - Description
-                descriptionField
-
-                // MARK: - Photo Picker
-                photoSection
-
-                // MARK: - Visibility
-                visibilitySelector
-            }
-            .padding(.vertical, 16)
-        }
-        .background(Color.fog)
-        .dismissKeyboardOnTap()
-        .navigationTitle(LanguageManager.shared.localizedString("newPost.title"))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+        VStack(spacing: 0) {
+            // MARK: - Header
+            HStack {
                 Button {
                     dismiss()
                 } label: {
                     Image(systemName: "xmark")
-                        .foregroundStyle(Color.coal)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
                 }
+
+                Spacer()
+
+                Text("KINETIC")
+                    .font(.inter(16, weight: .black))
+                    .foregroundStyle(.stravaOrange)
+
+                Spacer()
+
+                // Invisible balance element
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .bold))
+                    .opacity(0)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 14)
+            .background(.black)
+
+            // MARK: - Content
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 24) {
+                    // MARK: - Select Activity
+                    activitySelector
+
+                    // MARK: - Selected Session Preview
+                    if let session = viewModel.selectedSession {
+                        sessionPreview(session)
+                    }
+
+                    // MARK: - Description
+                    descriptionField
+
+                    // MARK: - Photo Picker
+                    photoSection
+                }
+                .padding(.top, 16)
+                .padding(.bottom, 24)
             }
 
-            ToolbarItem(placement: .topBarTrailing) {
+            // MARK: - Publish Button
+            VStack(spacing: 0) {
+                Divider()
+                    .overlay(Color.white.opacity(0.1))
+
                 Button {
                     Task {
                         await viewModel.publish()
@@ -50,25 +68,45 @@ struct NewPostView: View {
                         }
                     }
                 } label: {
-                    Text(LanguageManager.shared.localizedString("newPost.publish"))
-                        .font(.inter(14, weight: .bold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
-                        .background(viewModel.canPublish ? Color.stravaOrange : Color.silver)
-                        .clipShape(Capsule())
+                    HStack(spacing: 10) {
+                        if viewModel.isPublishing {
+                            ProgressView()
+                                .tint(.white)
+                        } else {
+                            Image(systemName: "paperplane.fill")
+                                .font(.system(size: 16, weight: .bold))
+                        }
+                        Text(viewModel.isPublishing
+                             ? LanguageManager.shared.localizedString("newPost.publish").uppercased() + "..."
+                             : LanguageManager.shared.localizedString("newPost.publish").uppercased()
+                        )
+                            .font(.inter(15, weight: .black))
+                            .tracking(1)
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 18)
+                    .background(viewModel.canPublish && !viewModel.isPublishing ? Color.stravaOrange : Color.gravel)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
                 .disabled(!viewModel.canPublish || viewModel.isPublishing)
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 32)
             }
+            .background(.black)
         }
+        .background(.black)
+        .dismissKeyboardOnTap()
+        .navigationBarHidden(true)
         .task {
             await viewModel.loadSessions()
         }
-        .alert("Error", isPresented: .init(
+        .alert(LanguageManager.shared.localizedString("alert.error"), isPresented: .init(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
-            Button("OK") { viewModel.errorMessage = nil }
+            Button(LanguageManager.shared.localizedString("alert.ok")) { viewModel.errorMessage = nil }
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
@@ -80,10 +118,10 @@ struct NewPostView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(LanguageManager.shared.localizedString("newPost.selectActivity"))
                 .font(.inter(12, weight: .bold))
-                .foregroundStyle(Color.gravel)
+                .foregroundStyle(.gravel)
                 .textCase(.uppercase)
                 .tracking(1)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 20)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -91,7 +129,7 @@ struct NewPostView: View {
                         sessionChip(session)
                     }
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 20)
             }
         }
     }
@@ -103,17 +141,17 @@ struct NewPostView: View {
         } label: {
             VStack(spacing: 6) {
                 Circle()
-                    .fill(isSelected ? Color.stravaOrange : Color.mist)
+                    .fill(isSelected ? Color.stravaOrange : Color.white.opacity(0.08))
                     .frame(width: 56, height: 56)
                     .overlay {
                         Image(systemName: "car.fill")
                             .font(.system(size: 20))
-                            .foregroundStyle(isSelected ? .white : Color.gravel)
+                            .foregroundStyle(isSelected ? .white : .gravel)
                     }
 
                 Text(session.name)
                     .font(.inter(11, weight: .medium))
-                    .foregroundStyle(isSelected ? Color.stravaOrange : Color.gravel)
+                    .foregroundStyle(isSelected ? Color.stravaOrange : .gravel)
                     .lineLimit(1)
             }
             .frame(width: 72)
@@ -126,10 +164,10 @@ struct NewPostView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(LanguageManager.shared.localizedString("newPost.telemetry"))
                 .font(.inter(12, weight: .bold))
-                .foregroundStyle(Color.gravel)
+                .foregroundStyle(.gravel)
                 .textCase(.uppercase)
                 .tracking(1)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 20)
 
             HStack(spacing: 0) {
                 statBlock(value: String(format: "%.0f", 142), unit: "KM/H")
@@ -139,9 +177,9 @@ struct NewPostView: View {
                 statBlock(value: session.formattedDuration, unit: "MIN")
             }
             .padding(16)
-            .background(Color.coal)
+            .background(Color.white.opacity(0.05))
             .clipShape(RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 20)
         }
     }
 
@@ -152,7 +190,7 @@ struct NewPostView: View {
                 .foregroundStyle(.white)
             Text(unit)
                 .font(.inter(10, weight: .medium))
-                .foregroundStyle(Color.gravel)
+                .foregroundStyle(.gravel)
         }
     }
 
@@ -162,7 +200,7 @@ struct NewPostView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(LanguageManager.shared.localizedString("newPost.description"))
                 .font(.inter(12, weight: .bold))
-                .foregroundStyle(Color.gravel)
+                .foregroundStyle(.gravel)
                 .textCase(.uppercase)
                 .tracking(1)
 
@@ -172,36 +210,45 @@ struct NewPostView: View {
                 axis: .vertical
             )
             .font(.inter(14, weight: .regular))
+            .foregroundStyle(.white)
             .lineLimit(3...6)
             .padding(12)
-            .background(Color.white)
+            .background(Color.white.opacity(0.05))
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            )
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 20)
     }
 
-    // MARK: - Photo Section
+    // MARK: - Media Section
 
     private var photoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(LanguageManager.shared.localizedString("newPost.photos"))
                 .font(.inter(12, weight: .bold))
-                .foregroundStyle(Color.gravel)
+                .foregroundStyle(.gravel)
                 .textCase(.uppercase)
                 .tracking(1)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 20)
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    // Add photo button
-                    PhotosPicker(selection: $viewModel.selectedPhotos, maxSelectionCount: 5, matching: .images) {
+                    // Add media button
+                    PhotosPicker(
+                        selection: $viewModel.selectedPhotos,
+                        maxSelectionCount: 5,
+                        matching: .any(of: [.images, .videos])
+                    ) {
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.mist)
+                            .fill(Color.white.opacity(0.08))
                             .frame(width: 80, height: 80)
                             .overlay {
                                 Image(systemName: "plus")
                                     .font(.system(size: 24))
-                                    .foregroundStyle(Color.gravel)
+                                    .foregroundStyle(.gravel)
                             }
                     }
 
@@ -213,67 +260,29 @@ struct NewPostView: View {
                             .frame(width: 80, height: 80)
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
-                }
-                .padding(.horizontal, 16)
-            }
-        }
-    }
 
-    // MARK: - Visibility Selector
+                    // Selected videos (thumbnails with play icon)
+                    ForEach(viewModel.videoThumbnails.indices, id: \.self) { index in
+                        ZStack {
+                            Image(uiImage: viewModel.videoThumbnails[index])
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 80, height: 80)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
 
-    private var visibilitySelector: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(LanguageManager.shared.localizedString("newPost.community"))
-                .font(.inter(12, weight: .bold))
-                .foregroundStyle(Color.gravel)
-                .textCase(.uppercase)
-                .tracking(1)
-                .padding(.horizontal, 16)
-
-            VStack(spacing: 0) {
-                ForEach(PostVisibility.allCases, id: \.self) { visibility in
-                    Button {
-                        viewModel.visibility = visibility
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: visibility.icon)
-                                .font(.system(size: 16))
-                                .foregroundStyle(
-                                    viewModel.visibility == visibility ? Color.stravaOrange : Color.gravel
-                                )
-                                .frame(width: 24)
-
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(visibility.displayName)
-                                    .font(.inter(14, weight: .semibold))
-                                    .foregroundStyle(Color.coal)
-                            }
-
-                            Spacer()
-
-                            if viewModel.visibility == visibility {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(Color.stravaOrange)
-                            }
+                            Image(systemName: "play.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundStyle(.white.opacity(0.9))
+                                .shadow(radius: 4)
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                    }
-
-                    if visibility != PostVisibility.allCases.last {
-                        Divider().padding(.leading, 52)
                     }
                 }
+                .padding(.horizontal, 20)
             }
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal, 16)
         }
     }
 }
 
 #Preview {
-    NavigationStack {
-        NewPostView()
-    }
+    NewPostView()
 }

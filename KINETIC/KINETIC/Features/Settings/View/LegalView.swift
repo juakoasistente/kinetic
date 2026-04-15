@@ -55,6 +55,7 @@ struct LegalView: View {
     let type: LegalType
     @State private var htmlContent: String?
     @State private var isLoading = true
+    @State private var webViewHeight: CGFloat = 0
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -82,11 +83,8 @@ struct LegalView: View {
             .padding(.vertical, 12)
             .background(Color.white)
 
-            if isLoading {
-                Spacer()
-                SpinningView()
-                Spacer()
-            } else {
+            ZStack {
+                // Content underneath (hidden until ready)
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .leading, spacing: 0) {
                         // Header
@@ -124,11 +122,22 @@ struct LegalView: View {
 
                         // HTML content
                         if let htmlContent {
-                            LegalHTMLView(htmlString: htmlContent)
-                                .frame(minHeight: 600)
-                                .padding(.horizontal, 24)
+                            LegalHTMLView(htmlString: htmlContent, contentHeight: $webViewHeight, onFinished: {
+                                withAnimation(.easeIn(duration: 0.25)) {
+                                    isLoading = false
+                                }
+                            })
+                            .frame(height: max(webViewHeight, 100))
+                            .padding(.horizontal, 24)
                         }
                     }
+                }
+                .opacity(isLoading ? 0 : 1)
+
+                // Spinner on top while loading
+                if isLoading {
+                    Color.fog
+                    SpinningView()
                 }
             }
         }
@@ -150,7 +159,6 @@ struct LegalView: View {
                 let (data, _) = try await URLSession.shared.data(from: url)
                 if let html = String(data: data, encoding: .utf8) {
                     htmlContent = html
-                    isLoading = false
                     return
                 }
             } catch {
@@ -158,7 +166,7 @@ struct LegalView: View {
             }
         }
 
-        // No fallback — show empty
+        // Fallback
         htmlContent = "<p>Content unavailable</p>"
         isLoading = false
     }
@@ -168,17 +176,47 @@ struct LegalView: View {
 
 struct LegalHTMLView: UIViewRepresentable {
     let htmlString: String
+    @Binding var contentHeight: CGFloat
+    var onFinished: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(parent: self)
+    }
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.isOpaque = false
         webView.backgroundColor = .clear
         webView.scrollView.isScrollEnabled = false
+        webView.scrollView.bounces = false
+        webView.navigationDelegate = context.coordinator
         return webView
     }
 
     func updateUIView(_ webView: WKWebView, context: Context) {
+        guard !context.coordinator.didLoad else { return }
+        context.coordinator.didLoad = true
         webView.loadHTMLString(htmlString, baseURL: nil)
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+        let parent: LegalHTMLView
+        var didLoad = false
+
+        init(parent: LegalHTMLView) {
+            self.parent = parent
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            webView.evaluateJavaScript("document.body.scrollHeight") { [weak self] result, _ in
+                if let height = result as? CGFloat {
+                    DispatchQueue.main.async {
+                        self?.parent.contentHeight = height
+                        self?.parent.onFinished()
+                    }
+                }
+            }
+        }
     }
 }
 

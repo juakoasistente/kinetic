@@ -25,6 +25,28 @@ final class CameraManager: NSObject {
             return
         }
 
+        configureSession()
+    }
+
+    /// Async version that runs AVCaptureSession setup off the main thread
+    func configureAsync(landscape: Bool = false) async {
+        print("[CameraManager] configureAsync() called, landscape: \(landscape)")
+        isLandscape = landscape
+
+        guard !isConfigured else {
+            print("[CameraManager] Already configured, skipping")
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async { [self] in
+                configureSession()
+                continuation.resume()
+            }
+        }
+    }
+
+    private func configureSession() {
         session.beginConfiguration()
         session.sessionPreset = .hd1920x1080
 
@@ -75,7 +97,9 @@ final class CameraManager: NSObject {
         }
 
         session.commitConfiguration()
-        isConfigured = true
+        DispatchQueue.main.async { [self] in
+            isConfigured = true
+        }
         print("[CameraManager] Configuration complete")
     }
 
@@ -132,6 +156,21 @@ final class CameraManager: NSObject {
         guard isRecording else { return }
         print("[CameraManager] Stopping recording")
         movieOutput.stopRecording()
+    }
+
+    /// Stop recording and wait for the file to be written
+    func stopRecordingAsync() async -> URL? {
+        guard isRecording else { return recordedVideoURL }
+        print("[CameraManager] Stopping recording (async)")
+        movieOutput.stopRecording()
+
+        // Wait until delegate sets recordedVideoURL (max ~10s)
+        for _ in 0..<100 {
+            try? await Task.sleep(for: .milliseconds(100))
+            if !isRecording, let url = recordedVideoURL { return url }
+        }
+        print("[CameraManager] WARNING: Timed out waiting for recording to finish")
+        return recordedVideoURL
     }
 }
 

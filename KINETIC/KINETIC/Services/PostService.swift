@@ -140,10 +140,22 @@ struct PostService {
 
     func uploadPostImage(postId: UUID, imageData: Data, index: Int) async throws -> String {
         guard let client else { throw ServiceError.notConfigured }
-        let path = "\(postId.uuidString)/\(index).jpg"
+        let path = "\(postId.uuidString.lowercased())/\(index).jpg"
         try await client.storage
             .from("post-media")
             .upload(path, data: imageData, options: .init(contentType: "image/jpeg", upsert: true))
+        let publicUrl = try client.storage
+            .from("post-media")
+            .getPublicURL(path: path)
+        return publicUrl.absoluteString
+    }
+
+    func uploadPostVideo(postId: UUID, videoData: Data, index: Int) async throws -> String {
+        guard let client else { throw ServiceError.notConfigured }
+        let path = "\(postId.uuidString.lowercased())/\(index).mov"
+        try await client.storage
+            .from("post-media")
+            .upload(path, data: videoData, options: .init(contentType: "video/quicktime", upsert: true))
         let publicUrl = try client.storage
             .from("post-media")
             .getPublicURL(path: path)
