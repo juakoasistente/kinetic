@@ -1,5 +1,4 @@
 import SwiftUI
-import AVKit
 
 struct PostCardView: View {
     let post: Post
@@ -12,12 +11,8 @@ struct PostCardView: View {
             authorHeader
 
             // MARK: - Media
-            if let media = post.media, let firstMedia = media.first {
-                if firstMedia.mediaType == .video {
-                    VideoMediaView(media: firstMedia)
-                } else {
-                    imageSection(firstMedia)
-                }
+            if let media = post.media, !media.isEmpty {
+                MediaCarouselView(media: media.sorted { $0.sortOrder < $1.sortOrder })
             }
 
             // MARK: - Description
@@ -82,29 +77,6 @@ struct PostCardView: View {
             }
     }
 
-    // MARK: - Image Media
-
-    private func imageSection(_ media: PostMedia) -> some View {
-        AsyncImage(url: URL(string: media.mediaUrl)) { image in
-            image
-                .resizable()
-                .scaledToFill()
-                .frame(maxWidth: .infinity)
-                .frame(height: 220)
-                .clipped()
-        } placeholder: {
-            Rectangle()
-                .fill(Color.mist)
-                .frame(height: 220)
-                .overlay {
-                    Image(systemName: "photo")
-                        .font(.system(size: 32))
-                        .foregroundStyle(Color.silver)
-                }
-        }
-        .padding(.top, 8)
-    }
-
     // MARK: - Interaction Bar
 
     private var interactionBar: some View {
@@ -137,69 +109,6 @@ struct PostCardView: View {
         }
         .font(.system(size: 20))
         .padding(.horizontal, 16)
-    }
-}
-
-// MARK: - Video Media View
-
-private struct VideoMediaView: View {
-    let media: PostMedia
-    @State private var isPlaying = false
-    @State private var player: AVPlayer?
-
-    var body: some View {
-        ZStack {
-            if isPlaying, let player {
-                VideoPlayer(player: player)
-                    .frame(height: 280)
-                    .onDisappear {
-                        player.pause()
-                    }
-            } else {
-                // Thumbnail / placeholder with play button
-                ZStack {
-                    AsyncImage(url: URL(string: media.mediaUrl)) { phase in
-                        switch phase {
-                        case .success(let image):
-                            image
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 220)
-                                .clipped()
-                        default:
-                            Rectangle()
-                                .fill(Color.coal)
-                                .frame(height: 220)
-                                .overlay {
-                                    Image(systemName: "video.fill")
-                                        .font(.system(size: 32))
-                                        .foregroundStyle(Color.gravel)
-                                }
-                        }
-                    }
-
-                    // Play button overlay
-                    Circle()
-                        .fill(.black.opacity(0.5))
-                        .frame(width: 56, height: 56)
-                        .overlay {
-                            Image(systemName: "play.fill")
-                                .font(.system(size: 22))
-                                .foregroundStyle(.white)
-                                .offset(x: 2)
-                        }
-                }
-                .onTapGesture {
-                    if let url = URL(string: media.mediaUrl) {
-                        player = AVPlayer(url: url)
-                        isPlaying = true
-                        player?.play()
-                    }
-                }
-            }
-        }
-        .padding(.top, 8)
     }
 }
 
