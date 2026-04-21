@@ -16,6 +16,8 @@ final class FeedViewModel {
         do {
             posts = try await PostService.shared.fetchFeed(limit: pageSize, offset: 0)
             offset = posts.count
+        } catch is CancellationError {
+            // Task was cancelled (e.g. tab switch) — ignore silently
         } catch {
             print("[FeedVM] Failed to load feed: \(error)")
             errorMessage = error.localizedDescription
@@ -30,6 +32,8 @@ final class FeedViewModel {
             let newPosts = try await PostService.shared.fetchFeed(limit: pageSize, offset: offset)
             posts.append(contentsOf: newPosts)
             offset += newPosts.count
+        } catch is CancellationError {
+            // Ignore
         } catch {
             errorMessage = error.localizedDescription
         }

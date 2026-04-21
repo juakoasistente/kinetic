@@ -31,6 +31,8 @@ final class HistoryViewModel {
 
         do {
             sessions = try await SessionService.shared.fetchSessions(userId: userId)
+        } catch is CancellationError {
+            // Task was cancelled (e.g. tab switch) — ignore silently
         } catch {
             sessions = []
             errorMessage = error.localizedDescription
