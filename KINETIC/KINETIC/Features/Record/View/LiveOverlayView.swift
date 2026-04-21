@@ -523,21 +523,16 @@ struct LiveOverlayView: View {
     }
 
     private func generateTelemetrySnapshots(summary: TrackingSummary) -> [OverlayCompositor.TelemetrySnapshot] {
-        let duration = Int(summary.elapsedTime)
-        guard duration > 0 else { return [] }
+        guard !summary.snapshots.isEmpty else { return [] }
 
-        return (0...duration).map { second in
-            let progress = Double(second) / Double(duration)
-            let speed = progress * summary.maxSpeed * (0.7 + 0.3 * sin(progress * .pi))
-            let dist = progress * summary.totalDistance
-
-            return OverlayCompositor.TelemetrySnapshot(
-                timestamp: TimeInterval(second),
-                speed: min(speed, summary.maxSpeed),
-                maxSpeed: summary.maxSpeed,
-                avgSpeed: summary.avgSpeed,
-                distance: dist,
-                elapsed: TimeInterval(second)
+        return summary.snapshots.map { snapshot in
+            OverlayCompositor.TelemetrySnapshot(
+                timestamp: snapshot.timestamp,
+                speed: snapshot.speed,
+                maxSpeed: snapshot.maxSpeed,
+                avgSpeed: snapshot.avgSpeed,
+                distance: snapshot.distance,
+                elapsed: snapshot.timestamp
             )
         }
     }
