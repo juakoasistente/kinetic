@@ -183,7 +183,7 @@
 "onboarding.2.subtitle" = "Record your routes with real-time telemetry. Speed, distance, G-force and live data over your video.";
 "onboarding.3.title" = "SHARE";
 "onboarding.3.highlight" = "YOUR STYLE";
-"onboarding.3.subtitle" = "Create reels with your best moments, share cards with your stats and post on social media.";
+"onboarding.3.subtitle" = "Share cards with your stats and post on social media.";
 "onboarding.4.title" = "YOU";
 "onboarding.4.highlight" = "DECIDE";
 "onboarding.4.subtitle" = "Compete with the community or keep everything private. Your routes, your rules.";
@@ -208,17 +208,6 @@
 "share.chooseStyle" = "CHOOSE STYLE";
 "share.share" = "SHARE";
 
-/* Reel */
-"reel.createReel" = "CREATE REEL";
-"reel.structure" = "REEL STRUCTURE";
-"reel.intro" = "Intro";
-"reel.highlights" = "Highlights";
-"reel.summary" = "Summary";
-"reel.estimatedReel" = "Estimated reel:";
-"reel.generating" = "GENERATING...";
-"reel.selectHighlights" = "SELECT HIGHLIGHTS";
-"reel.addClip" = "Add clip";
-"reel.totalHighlights" = "of highlights selected";
 
 /* Stats */
 "stats.time" = "Time";

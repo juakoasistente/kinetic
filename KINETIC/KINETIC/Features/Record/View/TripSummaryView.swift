@@ -22,7 +22,7 @@ struct TripSummaryView: View {
     @State private var isSaving = false
     @State private var showShareSheet = false
     @State private var showSharePicker = false
-    @State private var showReelBuilder = false
+
     @State private var selectedTemplate: ShareTemplate = .mapCard
     @State private var shareImage: UIImage?
     @State private var mapSnapshot: UIImage?
@@ -138,32 +138,6 @@ struct TripSummaryView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 28)
 
-                    // Create Reel button (only if we have video)
-                    if videoLocalIdentifier != nil, let videoURL {
-                        Button {
-                            showReelBuilder = true
-                        } label: {
-                            HStack(spacing: 10) {
-                                Image(systemName: "film")
-                                    .font(.system(size: 16, weight: .bold))
-                                Text(LanguageManager.shared.localizedString("reel.createReel"))
-                                    .font(.inter(15, weight: .black))
-                                    .tracking(1)
-                            }
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 18)
-                            .background(Color.white.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .stroke(Color.stravaOrange.opacity(0.4), lineWidth: 1)
-                            )
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 10)
-                    }
-
                     // Trip name input
                     TextField("", text: $tripName, prompt: Text(LanguageManager.shared.localizedString("trip.namePlaceholder")).foregroundStyle(.gravel))
                         .font(.inter(14, weight: .regular))
@@ -254,20 +228,7 @@ struct TripSummaryView: View {
                 ShareSheet(items: [shareImage])
             }
         }
-        .fullScreenCover(isPresented: $showReelBuilder) {
-            if let videoURL {
-                ReelBuilderView(
-                    videoURL: videoURL,
-                    tripName: tripName.isEmpty ? "KINETIC DRIVE" : tripName,
-                    maxSpeed: maxSpeed,
-                    avgSpeed: avgSpeed,
-                    distance: distance,
-                    time: time,
-                    mapSnapshot: mapSnapshot,
-                    routePoints: MapSnapshotHelper.normalizeCoordinates(routeCoordinates)
-                )
-            }
-        }
+
     }
 
     // MARK: - Route Map

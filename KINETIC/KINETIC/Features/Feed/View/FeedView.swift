@@ -45,6 +45,11 @@ struct FeedView: View {
                 await viewModel.loadFeed()
             }
         }
+        .onChange(of: tabCoordinator.selectedTab) { _, newTab in
+            if newTab == .feed {
+                Task { await viewModel.loadFeed() }
+            }
+        }
     }
 
     private var feedContent: some View {

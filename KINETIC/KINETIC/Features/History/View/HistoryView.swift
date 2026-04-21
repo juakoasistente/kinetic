@@ -43,6 +43,11 @@ struct HistoryView: View {
         .task {
             await viewModel.loadSessions()
         }
+        .onChange(of: tabCoordinator.selectedTab) { _, newTab in
+            if newTab == .history {
+                Task { await viewModel.loadSessions() }
+            }
+        }
         .alert(LanguageManager.shared.localizedString("alert.error"), isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }

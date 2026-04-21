@@ -183,7 +183,7 @@
 "onboarding.2.subtitle" = "Graba tus rutas con telemetría en tiempo real. Velocidad, distancia, G-force y datos en directo sobre el vídeo.";
 "onboarding.3.title" = "COMPARTE";
 "onboarding.3.highlight" = "TU ESTILO";
-"onboarding.3.subtitle" = "Crea reels con tus mejores momentos, comparte tarjetas con tus stats y publica en redes sociales.";
+"onboarding.3.subtitle" = "Comparte tarjetas con tus stats y publica en redes sociales.";
 "onboarding.4.title" = "TÚ";
 "onboarding.4.highlight" = "DECIDES";
 "onboarding.4.subtitle" = "Publica para competir con la comunidad o guárdalo todo en privado. Tus rutas, tus reglas.";
@@ -208,17 +208,6 @@
 "share.chooseStyle" = "ELIGE ESTILO";
 "share.share" = "COMPARTIR";
 
-/* Reel */
-"reel.createReel" = "CREAR REEL";
-"reel.structure" = "ESTRUCTURA DEL REEL";
-"reel.intro" = "Intro";
-"reel.highlights" = "Highlights";
-"reel.summary" = "Resumen";
-"reel.estimatedReel" = "Reel estimado:";
-"reel.generating" = "GENERANDO...";
-"reel.selectHighlights" = "SELECCIONAR HIGHLIGHTS";
-"reel.addClip" = "Añadir clip";
-"reel.totalHighlights" = "de highlights seleccionados";
 
 /* Stats */
 "stats.time" = "Tiempo";
