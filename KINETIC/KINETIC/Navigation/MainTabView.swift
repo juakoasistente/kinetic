@@ -39,11 +39,10 @@ struct MainTabView: View {
                 .opacity(tabCoordinator.selectedTab == .settings ? 1 : 0)
             }
 
-            // Tab Bar — stays in layout to prevent resize jumps during push
-            KineticTabBar(selectedTab: $tabCoordinator.selectedTab)
-                .opacity(isInDetailView ? 0 : 1)
-                .allowsHitTesting(!isInDetailView)
-                .animation(.none, value: isInDetailView)
+            // Tab Bar — hidden when navigated into a detail view
+            if !isInDetailView {
+                KineticTabBar(selectedTab: $tabCoordinator.selectedTab)
+            }
         }
         .environment(tabCoordinator)
         .id(languageManager.refreshId)
