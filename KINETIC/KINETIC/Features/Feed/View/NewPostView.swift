@@ -40,11 +40,6 @@ struct NewPostView: View {
                     // MARK: - Select Activity
                     activitySelector
 
-                    // MARK: - Selected Session Preview
-                    if let session = viewModel.selectedSession {
-                        sessionPreview(session)
-                    }
-
                     // MARK: - Description
                     descriptionField
 
@@ -155,42 +150,6 @@ struct NewPostView: View {
                     .lineLimit(1)
             }
             .frame(width: 72)
-        }
-    }
-
-    // MARK: - Session Preview
-
-    private func sessionPreview(_ session: Session) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(LanguageManager.shared.localizedString("newPost.telemetry"))
-                .font(.inter(12, weight: .bold))
-                .foregroundStyle(.gravel)
-                .textCase(.uppercase)
-                .tracking(1)
-                .padding(.horizontal, 20)
-
-            HStack(spacing: 0) {
-                statBlock(value: String(format: "%.0f", 142), unit: "KM/H")
-                Spacer()
-                statBlock(value: String(format: "%.1f", session.distance), unit: "KM")
-                Spacer()
-                statBlock(value: session.formattedDuration, unit: "MIN")
-            }
-            .padding(16)
-            .background(Color.white.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal, 20)
-        }
-    }
-
-    private func statBlock(value: String, unit: String) -> some View {
-        HStack(alignment: .firstTextBaseline, spacing: 2) {
-            Text(value)
-                .font(.inter(22, weight: .bold))
-                .foregroundStyle(.white)
-            Text(unit)
-                .font(.inter(10, weight: .medium))
-                .foregroundStyle(.gravel)
         }
     }
 

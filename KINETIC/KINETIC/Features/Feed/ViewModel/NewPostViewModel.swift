@@ -35,7 +35,10 @@ final class NewPostViewModel {
 
     func publish() async {
         guard canPublish else { return }
-        guard let userId = SupabaseManager.shared.currentUserId else {
+
+        // Refresh auth session to ensure valid JWT for RLS
+        guard await SupabaseManager.shared.restoreSession(),
+              let userId = SupabaseManager.shared.currentUserId else {
             errorMessage = "Not authenticated"
             return
         }
