@@ -13,11 +13,17 @@ final class FeedViewModel {
         isLoading = true
         errorMessage = nil
         offset = 0
+
+        // Refresh auth session so the JWT is valid before fetching
+        _ = await SupabaseManager.shared.restoreSession()
+
         do {
             posts = try await PostService.shared.fetchFeed(limit: pageSize, offset: 0)
             offset = posts.count
         } catch is CancellationError {
-            // Task was cancelled (e.g. tab switch) — ignore silently
+            // Task was cancelled (e.g. tab switch, pull-to-refresh) — ignore silently
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            // URLSession task cancelled — ignore silently
         } catch {
             print("[FeedVM] Failed to load feed: \(error)")
             errorMessage = error.localizedDescription
@@ -33,6 +39,8 @@ final class FeedViewModel {
             posts.append(contentsOf: newPosts)
             offset += newPosts.count
         } catch is CancellationError {
+            // Ignore
+        } catch let urlError as URLError where urlError.code == .cancelled {
             // Ignore
         } catch {
             errorMessage = error.localizedDescription

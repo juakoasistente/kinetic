@@ -24,6 +24,9 @@ final class HistoryViewModel {
         isLoading = true
         defer { isLoading = false }
 
+        // Refresh auth session so the JWT is valid before fetching
+        _ = await SupabaseManager.shared.restoreSession()
+
         guard let userId = SupabaseManager.shared.currentUserId else {
             sessions = []
             return
@@ -32,9 +35,11 @@ final class HistoryViewModel {
         do {
             sessions = try await SessionService.shared.fetchSessions(userId: userId)
         } catch is CancellationError {
-            // Task was cancelled (e.g. tab switch) — ignore silently
+            // Task was cancelled (e.g. tab switch, pull-to-refresh) — ignore silently
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            // URLSession task cancelled — ignore silently
         } catch {
-            sessions = []
+            // Keep existing sessions on transient errors; only surface message
             errorMessage = error.localizedDescription
         }
     }
