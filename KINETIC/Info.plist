@@ -5,6 +5,7 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
+		<string>audio</string>
 	</array>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>KINETIC needs access to save your driving videos to your photo library.</string>

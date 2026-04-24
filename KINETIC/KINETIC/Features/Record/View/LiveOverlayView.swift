@@ -328,6 +328,10 @@ struct LiveOverlayView: View {
             guard overlayState == .recording, !isPaused, let start = timerStartDate else { return }
             elapsed = Date().timeIntervalSince(start)
         }
+        .onDisappear {
+            // Safety: always re-enable auto-lock when leaving the view
+            UIApplication.shared.isIdleTimerDisabled = false
+        }
         .fullScreenCover(isPresented: $showSummary) {
             if let summary = trackingSummary {
                 TripSummaryView(
@@ -468,6 +472,9 @@ struct LiveOverlayView: View {
     // MARK: - Start Recording
 
     private func startRecording() {
+        // Prevent auto-lock during recording (iOS stops camera when screen locks)
+        UIApplication.shared.isIdleTimerDisabled = true
+
         locationManager.startTracking()
         cameraManager.startRecording()
         timerStartDate = Date()
@@ -478,6 +485,9 @@ struct LiveOverlayView: View {
     // MARK: - Stop & Process
 
     private func stopEverything() {
+        // Re-enable auto-lock
+        UIApplication.shared.isIdleTimerDisabled = false
+
         // Force back to portrait before showing summary
         OrientationLock.shared.unlock()
 
